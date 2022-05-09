@@ -28,12 +28,12 @@ export const getOrder = (req, res, next) => {
  */
 export const getNonce = (req, res, next) => {
     const { signer } = req.body;
-    const order = orders.findOne({ signer })
-                        .sort('nonce')
-                        .exec(function (err, member) {
-                            if ( err ) {
-                                return next(err);
-                            }
-                            res.json({"success": true, "message": null, "data": member?(member.nonce + 1):1});
-                        });
+    orders.findOne({ signer })
+    .sort('nonce')
+    .exec(function (err, member) {
+        if ( err ) {
+            return next(err);
+        }
+        res.json({"success": true, "message": null, "data": member?(member.nonce + 1):1});
+    });
 }
