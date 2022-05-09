@@ -1,4 +1,4 @@
-This is a backend project using mongodb, node.js for omni-x makerorder
+This is a backend project using mongodb, node.js for omni-x
 
 Getting Started
 First, run the development server:
