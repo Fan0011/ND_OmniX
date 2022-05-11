@@ -17,6 +17,11 @@ const ordersSchema = new Schema({
     signatureHash: String,
     srcChain: String,
     destChain: String,
+    status: {
+        type: String,
+        enum: ['CANCELLED', 'EXECUTED', 'EXPIRED', 'VALID'],
+        default: 'VALID'
+    }
 });
 
 export default mongoose.model('orders', ordersSchema);
