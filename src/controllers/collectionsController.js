@@ -193,9 +193,6 @@ export const getCollectionStat = (req, res, next) => {
         )
         .exec(function (err, order) {
             if ( err ) return next(err);
-            result['volume24h'] = 0;
-            result['count24h'] = 0;
-            result['average24h'] = 0;
             if ( order[0] ) {
                 order = order[0];
                 result['volume24h'] = order.volume;
@@ -225,9 +222,6 @@ export const getCollectionStat = (req, res, next) => {
             )
             .exec(function (err, order) {
                 if ( err ) return next(err);
-                result['volume7d'] = 0;
-                result['count7d'] = 0;
-                result['average7d'] = 0;
                 if ( order[0] ) {
                     order = order[0];
                     result['volume7d'] = order.volume;
@@ -257,9 +251,6 @@ export const getCollectionStat = (req, res, next) => {
                 )
                 .exec(function (err, order) {
                     if ( err ) return next(err);
-                    result['volume1m'] = 0;
-                    result['count1m'] = 0;
-                    result['average1m'] = 0;
                     if ( order[0] ) {
                         order = order[0];
                         result['volume1m'] = order.volume;
@@ -289,9 +280,6 @@ export const getCollectionStat = (req, res, next) => {
                     )
                     .exec(function (err, order) {
                         if ( err ) return next(err);
-                        result['volume3m'] = 0;
-                        result['count3m'] = 0;
-                        result['average3m'] = 0;
                         if ( order[0] ) {
                             order = order[0];
                             result['volume3m'] = order.volume;
@@ -321,9 +309,6 @@ export const getCollectionStat = (req, res, next) => {
                         )
                         .exec(function (err, order) {
                             if ( err ) return next(err);
-                            result['volume6m'] = 0;
-                            result['count6m'] = 0;
-                            result['average6m'] = 0;
                             if ( order[0] ) {
                                 order = order[0];
                                 result['volume6m'] = order.volume;
@@ -353,9 +338,6 @@ export const getCollectionStat = (req, res, next) => {
                             )
                             .exec(function (err, order) {
                                 if ( err ) return next(err);
-                                result['volume1y'] = 0;
-                                result['count1y'] = 0;
-                                result['average1y'] = 0;
                                 if ( order[0] ) {
                                     order = order[0];
                                     result['volume1y'] = order.volume;
@@ -384,9 +366,6 @@ export const getCollectionStat = (req, res, next) => {
                                 )
                                 .exec(function (err, order) {
                                     if ( err ) return next(err);
-                                    result['volumeAll'] = 0;
-                                    result['countAll'] = 0;
-                                    result['averageAll'] = 0;
                                     if ( order[0] ) {
                                         order = order[0];
                                         result['volumeAll'] = order.volume;
