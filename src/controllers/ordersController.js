@@ -1,5 +1,7 @@
 import messages from "../constants/message.js";
 import orders from "../models/orders.js";
+import prices from "../models/prices.js";
+import { getCurrentDate } from "../utils/date.js";
 
 /**
  * Make Order Api
@@ -39,7 +41,9 @@ export const makeOrder = (req, res, next) => {
             minPercentageToAsk, 
             signatureHash: signature, 
             srcChain, 
-            destChain 
+            destChain,
+            volume: price * amount,
+            updated: getCurrentDate() 
         });
 
         order.save((err) => {
@@ -195,11 +199,31 @@ export const changeOrderStatus = (req, res, next) => {
 
     try {
         orders.findOneAndUpdate({ _id: hash }, {
-            $set: { 'status': status, 'signatureHash': null },
+            $set: { 'status': status, 'signatureHash': null, 'updated': getCurrentDate() },
         }, {
             new: true
         }, function(err, updated_item) {
             if ( err ) return res.send(400, {error: err});
+            
+            if ( status == 'EXECUTED' ) {
+                let filters = [];
+                filters.push({collectionAddr: updated_item.collectionAddr});
+                filters.push({price: {$lte:updated_item.price}});
+
+                prices.find({ $and: filters }).exec((err, order) => {
+                    if ( order.length == 0 ) {
+                        const price = new prices({ 
+                            collectionAddr: updated_item.collectionAddr,
+                            price: updated_item.price,
+                            updated: getCurrentDate()
+                        });
+
+                        price.save((err) => {
+                            if (err) { return next(err); }
+                        });
+                    }
+                })
+            }
             return res.json({
                 "success": true,
                 "message": null,

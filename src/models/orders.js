@@ -17,6 +17,8 @@ const ordersSchema = new Schema({
     signatureHash: String,
     srcChain: String,
     destChain: String,
+    updated: Number,
+    volume: Number,
     status: {
         type: String,
         enum: ['CANCELLED', 'EXECUTED', 'EXPIRED', 'VALID'],
