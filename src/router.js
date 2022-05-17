@@ -1,5 +1,5 @@
 import { makeOrder, getNonce, getOrder, changeOrderStatus } from './controllers/ordersController.js';
-import { addCollection, getCollection, getCollectionStat } from './controllers/collectionsController.js';
+import { addCollection, getCollection, getCollectionStat, getCollectionChart } from './controllers/collectionsController.js';
 
 const router = (app) => {
 
@@ -13,6 +13,7 @@ const router = (app) => {
   app.post('/api/v1/collections', addCollection);
   app.get('/api/v1/collections', getCollection);
   app.get('/api/v1/collections/stats', getCollectionStat);
+  app.get('/api/v1/collections/chart', getCollectionChart);
 };
 
 export default router;

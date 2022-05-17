@@ -1,7 +1,6 @@
 import collections from "../models/collections.js";
 import orders from "../models/orders.js";
 import prices from "../models/prices.js";
-import { getCurrentDate } from "../utils/date.js";
 
 /**
  * Collections
@@ -89,13 +88,13 @@ export const getCollection = (req, res, next) => {
  */
 export const getCollectionStat = (req, res, next) => {
     const { address } = req.body;
-    const currentDate = getCurrentDate();
-    const dateBefore24h = currentDate - 24 * 60 * 60;
-    const dateBefore7d = currentDate - 7 * 24 * 60 * 60;
-    const dateBefore30d = currentDate - 30 * 24 * 60 * 60;
-    const dateBefore3m = currentDate - 90 * 24 * 60 * 60;
-    const dateBefore6m = currentDate - 180 * 24 * 60 * 60;
-    const dateBefore1y = currentDate - 365 * 24 * 60 * 60;
+    const currentDate = new Date();
+    const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
+    const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000);
+    const dateBefore30d = new Date(currentDate - 30 * 24 * 60 * 60 * 1000);
+    const dateBefore3m = new Date(currentDate - 90 * 24 * 60 * 60 * 1000);
+    const dateBefore6m = new Date(currentDate - 180 * 24 * 60 * 60 * 1000);
+    const dateBefore1y = new Date(currentDate - 365 * 24 * 60 * 60 * 1000);
 
     let result = {
         'address': address,
@@ -126,13 +125,13 @@ export const getCollectionStat = (req, res, next) => {
     prices.aggregate([{
         $addFields: {
             floor24h: {
-                $cond: [ { $lt: ['$updated', dateBefore24h] }, '$price', 0 ]
+                $cond: [ { $lt: ['$updatedAt', dateBefore24h] }, '$price', 0 ]
             },
             floor7d: {
-                $cond: [ { $lt: ['$updated', dateBefore7d] }, '$price', 0 ]
+                $cond: [ { $lt: ['$updatedAt', dateBefore7d] }, '$price', 0 ]
             },
             floor30d: {
-                $cond: [ { $lt: ['$updated', dateBefore30d] }, '$price', 0 ]
+                $cond: [ { $lt: ['$updatedAt', dateBefore30d] }, '$price', 0 ]
             }
         }
     },
@@ -179,7 +178,7 @@ export const getCollectionStat = (req, res, next) => {
                 $and: [
                     {'status': 'EXECUTED'},
                     {'collectionAddr': address},
-                    {updated: {$gte: dateBefore24h}}
+                    {updatedAt: {$gte: dateBefore24h}}
                 ]
             }
         },
@@ -208,7 +207,7 @@ export const getCollectionStat = (req, res, next) => {
                     $and: [
                         {'status': 'EXECUTED'},
                         {'collectionAddr': address},
-                        {updated: {$gte: dateBefore7d}}
+                        {updatedAt: {$gte: dateBefore7d}}
                     ]
                 }
             },
@@ -237,7 +236,7 @@ export const getCollectionStat = (req, res, next) => {
                         $and: [
                             {'status': 'EXECUTED'},
                             {'collectionAddr': address},
-                            {updated: {$gte: dateBefore30d}}
+                            {updatedAt: {$gte: dateBefore30d}}
                         ]
                     }
                 },
@@ -266,7 +265,7 @@ export const getCollectionStat = (req, res, next) => {
                             $and: [
                                 {'status': 'EXECUTED'},
                                 {'collectionAddr': address},
-                                {updated: {$gte: dateBefore3m}}
+                                {updatedAt: {$gte: dateBefore3m}}
                             ]
                         }
                     },
@@ -295,7 +294,7 @@ export const getCollectionStat = (req, res, next) => {
                                 $and: [
                                     {'status': 'EXECUTED'},
                                     {'collectionAddr': address},
-                                    {updated: {$gte: dateBefore6m}}
+                                    {updatedAt: {$gte: dateBefore6m}}
                                 ]
                             }
                         },
@@ -324,7 +323,7 @@ export const getCollectionStat = (req, res, next) => {
                                     $and: [
                                         {'status': 'EXECUTED'},
                                         {'collectionAddr': address},
-                                        {updated: {$gte: dateBefore1y}}
+                                        {updatedAt: {$gte: dateBefore1y}}
                                     ]
                                 }
                             },
@@ -383,5 +382,58 @@ export const getCollectionStat = (req, res, next) => {
                 })
             })
         })
+    })
+}
+
+/**
+ * Get Chart Data Function
+ */
+
+export const getCollectionChart = (req, res, next) => {
+    const { address, days } = req.body;
+    const currentDate = new Date();
+    const timesPerDay = 24 * 60 * 60 * 1000;
+    const dateBefore = new Date(currentDate - days * timesPerDay);
+
+    orders.aggregate([
+    {
+        $match: {
+            $and: [
+                {'status': 'EXECUTED'},
+                {'collectionAddr': address},
+                {'updatedAt': {$gte: dateBefore}}
+            ]
+        }
+    },
+    { $group:
+        {
+            _id : { day: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } } },
+            count: {$sum: 1},
+            volume: { $sum: "$volume" },
+        }
+    }]
+    )
+    .exec(function (err, orders) {
+        if ( err ) return next(err);
+        
+        let result = {};
+        for ( var i = dateBefore.getTime(); i <= currentDate.getTime(); i = i + timesPerDay ) {
+            result[new Date(i).toISOString().slice(0, 10)] = {
+                count: 0,
+                volume: 0,
+                average: 0
+            };
+        }
+        
+        for( let order of orders ) {
+            console.log(order["_id"]["day"]);
+            result[order["_id"]["day"]].volume = order["volume"];
+            result[order["_id"]["day"]].count = order["count"];
+            if ( order["count"] > 0 ) {
+                result[order["_id"]["day"]].average = order["volume"] / order["count"];
+            }
+        }
+        
+        res.json({"success": true, "message": null, "data": result});
     })
 }
