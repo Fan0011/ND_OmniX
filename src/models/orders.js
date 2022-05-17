@@ -18,12 +18,13 @@ const ordersSchema = new Schema({
     srcChain: String,
     destChain: String,
     updated: Number,
-    volume: Number,
+    volume  : Number,
     status: {
         type: String,
         enum: ['CANCELLED', 'EXECUTED', 'EXPIRED', 'VALID'],
         default: 'VALID'
     }
-});
+}, 
+{ timestamps: true });
 
 export default mongoose.model('orders', ordersSchema);

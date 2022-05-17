@@ -1,7 +1,6 @@
 import messages from "../constants/message.js";
 import orders from "../models/orders.js";
 import prices from "../models/prices.js";
-import { getCurrentDate } from "../utils/date.js";
 
 /**
  * Make Order Api
@@ -42,8 +41,7 @@ export const makeOrder = (req, res, next) => {
             signatureHash: signature, 
             srcChain, 
             destChain,
-            volume: price * amount,
-            updated: getCurrentDate() 
+            volume: price * amount
         });
 
         order.save((err) => {
@@ -199,7 +197,7 @@ export const changeOrderStatus = (req, res, next) => {
 
     try {
         orders.findOneAndUpdate({ _id: hash }, {
-            $set: { 'status': status, 'signatureHash': null, 'updated': getCurrentDate() },
+            $set: { 'status': status, 'signatureHash': null },
         }, {
             new: true
         }, function(err, updated_item) {
@@ -214,8 +212,7 @@ export const changeOrderStatus = (req, res, next) => {
                     if ( order.length == 0 ) {
                         const price = new prices({ 
                             collectionAddr: updated_item.collectionAddr,
-                            price: updated_item.price,
-                            updated: getCurrentDate()
+                            price: updated_item.price
                         });
 
                         price.save((err) => {
