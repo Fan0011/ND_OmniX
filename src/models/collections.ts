@@ -1,7 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
+import * as mongoose from "mongoose";
+
 const Schema = mongoose.Schema;
+
 const collectionsSchema = new Schema({
     address: String,
     owner: String,
@@ -19,5 +19,5 @@ const collectionsSchema = new Schema({
     isVerified: Boolean,
     isExplicit: Boolean,
 });
-exports.default = mongoose.model('collections', collectionsSchema);
-//# sourceMappingURL=collections.js.map
+
+export default mongoose.model('collections', collectionsSchema);

@@ -1,439 +1,202 @@
-import collections from "../models/collections.js";
-import orders from "../models/orders.js";
-import prices from "../models/prices.js";
-
-/**
- * Collections
- */
-
-/**
- * Add Collection Function
- */
-export const addCollection = (req, res, next) => {
-    const {
-        address,
-        owner,
-        name,
-        description,
-        symbol,
-        type,
-        websiteLink,
-        facebookLink,
-        twitterLink,
-        instagramLink,
-        telegramLink,
-        mediumLink,
-        discordLink,
-        isVerified,
-        isExplicit
-    } = req.body;
-    
-    const collection = new collections({
-        address,
-        owner,
-        name,
-        description,
-        symbol,
-        type,
-        websiteLink,
-        facebookLink,
-        twitterLink,
-        instagramLink,
-        telegramLink,
-        mediumLink,
-        discordLink,
-        isVerified,
-        isExplicit
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-
-    collection.save((err) => {
-        if (err) { return next(err); }
-        res.json({
-            address,
-            owner,
-            name,
-            description,
-            symbol,
-            type,
-            websiteLink,
-            facebookLink,
-            twitterLink,
-            instagramLink,
-            telegramLink,
-            mediumLink,
-            discordLink,
-            isVerified,
-            isExplicit
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const errorHandler_1 = require("../handlers/errorHandler");
+const collections_1 = require("../repositories/collections");
+const orders_1 = require("../repositories/orders");
+const prices_1 = require("../repositories/prices");
+class CollectionsController {
+    constructor() {
+        /**
+        * Get Collection Function
+        */
+        this.getCollection = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { address } = req.body;
+            try {
+                const collection = yield collections_1.default.getCollectionByAddress(address);
+                res.json({ "success": true, "message": null, "data": collection });
+            }
+            catch (error) {
+                (0, errorHandler_1.apiErrorHandler)(error, req, res, 'Get Collection failed.');
+            }
         });
-    });
-}
-
-/**
- * Get Collection Function
- */
-export const getCollection = (req, res, next) => {
-    const { address } = req.body;
-    collections.findOne({ address })
-    .sort('nonce')
-    .exec(function (err, collection) {
-        if ( err ) {
-            return next(err);
-        }
-        res.json({"success": true, "message": null, "data": collection});
-    });
-}
-
-/**
- * Get Collections Stats Function
- */
-export const getCollectionStat = (req, res, next) => {
-    const { address } = req.body;
-    const currentDate = new Date();
-    const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
-    const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000);
-    const dateBefore30d = new Date(currentDate - 30 * 24 * 60 * 60 * 1000);
-    const dateBefore3m = new Date(currentDate - 90 * 24 * 60 * 60 * 1000);
-    const dateBefore6m = new Date(currentDate - 180 * 24 * 60 * 60 * 1000);
-    const dateBefore1y = new Date(currentDate - 365 * 24 * 60 * 60 * 1000);
-
-    let result = {
-        'address': address,
-        'floorPrice': 0,
-        'floorChange24h': 0,
-        'floorChange7d': 0,
-        'floorChange30d': 0,
-        'volume7d': 0,
-        'average7d': 0,
-        'count7d': 0,
-        'volume1m': 0,
-        'average1m': 0,
-        'count1m': 0,
-        'volume3m': 0,
-        'average3m': 0,
-        'count3m': 0,
-        'volume6m': 0,
-        'average6m': 0,
-        'count6m': 0,
-        'volume1y': 0,
-        'average1y': 0,
-        'count1y': 0,
-        'volumeAll': 0,
-        'averageAll': 0,
-        'countAll': 0
-    };
-
-    prices.aggregate([{
-        $addFields: {
-            floor24h: {
-                $cond: [ { $lt: ['$updatedAt', dateBefore24h] }, '$price', 0 ]
-            },
-            floor7d: {
-                $cond: [ { $lt: ['$updatedAt', dateBefore7d] }, '$price', 0 ]
-            },
-            floor30d: {
-                $cond: [ { $lt: ['$updatedAt', dateBefore30d] }, '$price', 0 ]
+        /**
+        * Add Collection Function
+        */
+        this.addCollection = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { address, owner, name, description, symbol, type, websiteLink, facebookLink, twitterLink, instagramLink, telegramLink, mediumLink, discordLink, isVerified, isExplicit } = req.body;
+            try {
+                const collection = yield collections_1.default.addCollection(address, owner, name, description, symbol, type, websiteLink, facebookLink, twitterLink, instagramLink, telegramLink, mediumLink, discordLink, isVerified, isExplicit);
+                res.json({ "success": true, "message": null, "data": collection });
             }
-        }
-    },
-    {
-        $match: {
-            collectionAddr: address,
-        }
-    },
-    { $group:
-        {
-            _id: null,
-            floor : { $min: "$price" },
-            floor24h: { $min: "$floor24h" },
-            floor7d: { $min: "$floor7d" },
-            floor30d: { $min: "$floor30d" }
-        }
-    }])
-    .exec(function (err, floor) {
-        if ( err ) return next(err);
-
-        if ( floor[0] ) {
-            floor = floor[0];
-            result['floorPrice'] = floor.floor;
-            if ( floor.floor24h > 0 ) {
-                result['floorChange24h'] = floor.floor24h - floor.floor;
-            } else {
-                result['floorChange24h'] = floor.floor;
+            catch (error) {
+                (0, errorHandler_1.apiErrorHandler)(error, req, res, 'Add Collection failed.');
             }
-            if ( floor.floor7d > 0 ) {
-                result['floorChange7d'] = floor.floor7d - floor.floor;
-            } else {
-                result['floorChange7d'] = floor.floor;
-            }
-            if ( floor.floor30d > 0 ) {
-                result['floorChange30d'] = floor.floor30d - floor.floor;
-            } else {
-                result['floorChange30d'] = floor.floor;
-            }
-        }
-    
-        orders.aggregate([
-        {
-            $match: {
-                $and: [
-                    {'status': 'EXECUTED'},
-                    {'collectionAddr': address},
-                    {updatedAt: {$gte: dateBefore24h}}
-                ]
-            }
-        },
-        { $group:
-            {
-                _id: null,
-                count: { $sum: 1 },
-                volume: { $sum: "$volume" },
-            }
-        }]
-        )
-        .exec(function (err, order) {
-            if ( err ) return next(err);
-            if ( order[0] ) {
-                order = order[0];
-                result['volume24h'] = order.volume;
-                result['count24h'] = order.count;
-                if ( order.count > 0 ) {
-                    result['average24h'] = Math.floor(order.volume / order.count);
-                }
-            }
-            
-            orders.aggregate([
-            {
-                $match: {
-                    $and: [
-                        {'status': 'EXECUTED'},
-                        {'collectionAddr': address},
-                        {updatedAt: {$gte: dateBefore7d}}
-                    ]
-                }
-            },
-            { $group:
-                {
-                    _id: null,
-                    count: { $sum: 1 },
-                    volume: { $sum: "$volume" },
-                }
-            }]
-            )
-            .exec(function (err, order) {
-                if ( err ) return next(err);
-                if ( order[0] ) {
-                    order = order[0];
-                    result['volume7d'] = order.volume;
-                    result['count7d'] = order.count;
-                    if ( order.count > 0 ) {
-                        result['average7d'] = Math.floor(order.volume / order.count);
+        });
+        /**
+        * Get Collections Stats Function
+        */
+        this.getCollectionStat = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { address } = req.body;
+            const currentDate = new Date().getTime();
+            const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
+            const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000);
+            const dateBefore30d = new Date(currentDate - 30 * 24 * 60 * 60 * 1000);
+            const dateBefore3m = new Date(currentDate - 90 * 24 * 60 * 60 * 1000);
+            const dateBefore6m = new Date(currentDate - 180 * 24 * 60 * 60 * 1000);
+            const dateBefore1y = new Date(currentDate - 365 * 24 * 60 * 60 * 1000);
+            try {
+                let result = {
+                    'address': address,
+                    'floorPrice': 0,
+                    'floorChange24h': 0,
+                    'floorChange7d': 0,
+                    'floorChange30d': 0,
+                    'volume7d': 0,
+                    'average7d': 0,
+                    'count7d': 0,
+                    'volume1m': 0,
+                    'average1m': 0,
+                    'count1m': 0,
+                    'volume3m': 0,
+                    'average3m': 0,
+                    'count3m': 0,
+                    'volume6m': 0,
+                    'average6m': 0,
+                    'count6m': 0,
+                    'volume1y': 0,
+                    'average1y': 0,
+                    'count1y': 0,
+                    'volumeAll': 0,
+                    'averageAll': 0,
+                    'countAll': 0
+                };
+                const floor = yield prices_1.default.getFloorPrices(address);
+                if (floor[0]) {
+                    result['floorPrice'] = floor[0].floor;
+                    if (floor[0].floor24h > 0) {
+                        result['floorChange24h'] = floor[0].floor24h - floor[0].floor;
+                    }
+                    else {
+                        result['floorChange24h'] = floor[0].floor;
+                    }
+                    if (floor[0].floor7d > 0) {
+                        result['floorChange7d'] = floor[0].floor7d - floor[0].floor;
+                    }
+                    else {
+                        result['floorChange7d'] = floor[0].floor;
+                    }
+                    if (floor[0].floor30d > 0) {
+                        result['floorChange30d'] = floor[0].floor30d - floor[0].floor;
+                    }
+                    else {
+                        result['floorChange30d'] = floor[0].floor;
                     }
                 }
-    
-                orders.aggregate([
-                {
-                    $match: {
-                        $and: [
-                            {'status': 'EXECUTED'},
-                            {'collectionAddr': address},
-                            {updatedAt: {$gte: dateBefore30d}}
-                        ]
+                const volume24hInfo = yield orders_1.default.getVolumeInfo(address, dateBefore24h);
+                if (volume24hInfo[0]) {
+                    result['volume24h'] = volume24hInfo[0].volume;
+                    result['count24h'] = volume24hInfo[0].count;
+                    if (volume24hInfo[0].count > 0) {
+                        result['average24h'] = Math.floor(volume24hInfo[0].volume / volume24hInfo[0].count);
                     }
-                },
-                { $group:
-                    {
-                        _id: null,
-                        count: { $sum: 1 },
-                        volume: { $sum: "$volume" },
+                }
+                const volume7dInfo = yield orders_1.default.getVolumeInfo(address, dateBefore7d);
+                if (volume7dInfo[0]) {
+                    result['volume7d'] = volume7dInfo[0].volume;
+                    result['count7d'] = volume7dInfo[0].count;
+                    if (volume7dInfo[0].count > 0) {
+                        result['average7d'] = Math.floor(volume7dInfo[0].volume / volume7dInfo[0].count);
                     }
-                }]
-                )
-                .exec(function (err, order) {
-                    if ( err ) return next(err);
-                    if ( order[0] ) {
-                        order = order[0];
-                        result['volume1m'] = order.volume;
-                        result['count1m'] = order.count;
-                        if ( order.count > 0 ) {
-                            result['average1m'] = Math.floor(order.volume / order.count);
-                        }
+                }
+                const volume1mInfo = yield orders_1.default.getVolumeInfo(address, dateBefore30d);
+                if (volume1mInfo[0]) {
+                    result['volume1m'] = volume1mInfo[0].volume;
+                    result['count1m'] = volume1mInfo[0].count;
+                    if (volume1mInfo[0].count > 0) {
+                        result['average1m'] = Math.floor(volume1mInfo[0].volume / volume1mInfo[0].count);
                     }
-    
-                    orders.aggregate([
-                    {
-                        $match: {
-                            $and: [
-                                {'status': 'EXECUTED'},
-                                {'collectionAddr': address},
-                                {updatedAt: {$gte: dateBefore3m}}
-                            ]
-                        }
-                    },
-                    { $group:
-                        {
-                            _id: null,
-                            count: { $sum: 1 },
-                            volume: { $sum: "$volume" },
-                        }
-                    }]
-                    )
-                    .exec(function (err, order) {
-                        if ( err ) return next(err);
-                        if ( order[0] ) {
-                            order = order[0];
-                            result['volume3m'] = order.volume;
-                            result['count3m'] = order.count;
-                            if ( order.count > 0 ) {
-                                result['average3m'] = Math.floor(order.volume / order.count);
-                            }
-                        }
-    
-                        orders.aggregate([
-                        {
-                            $match: {
-                                $and: [
-                                    {'status': 'EXECUTED'},
-                                    {'collectionAddr': address},
-                                    {updatedAt: {$gte: dateBefore6m}}
-                                ]
-                            }
-                        },
-                        { $group:
-                            {
-                                _id: null,
-                                count: { $sum: 1 },
-                                volume: { $sum: "$volume" },
-                            }
-                        }]
-                        )
-                        .exec(function (err, order) {
-                            if ( err ) return next(err);
-                            if ( order[0] ) {
-                                order = order[0];
-                                result['volume6m'] = order.volume;
-                                result['count6m'] = order.count;
-                                if ( order.count > 0 ) {
-                                    result['average6m'] = Math.floor(order.volume / order.count);
-                                }
-                            }
-    
-                            orders.aggregate([
-                            {
-                                $match: {
-                                    $and: [
-                                        {'status': 'EXECUTED'},
-                                        {'collectionAddr': address},
-                                        {updatedAt: {$gte: dateBefore1y}}
-                                    ]
-                                }
-                            },
-                            { $group:
-                                {
-                                    _id: null,
-                                    count: { $sum: 1 },
-                                    volume: { $sum: "$volume" },
-                                }
-                            }]
-                            )
-                            .exec(function (err, order) {
-                                if ( err ) return next(err);
-                                if ( order[0] ) {
-                                    order = order[0];
-                                    result['volume1y'] = order.volume;
-                                    result['count1y'] = order.count;
-                                    if ( order.count > 0 ) {
-                                        result['average1y'] = Math.floor(order.volume / order.count);
-                                    }
-                                }
-    
-                                orders.aggregate([
-                                {
-                                    $match: {
-                                        $and: [
-                                            {'status': 'EXECUTED'},
-                                            {'collectionAddr': address},
-                                        ]
-                                    }
-                                },
-                                { $group:
-                                    {
-                                        _id: null,
-                                        count: { $sum: 1 },
-                                        volume: { $sum: "$volume" },
-                                    }
-                                }]
-                                )
-                                .exec(function (err, order) {
-                                    if ( err ) return next(err);
-                                    if ( order[0] ) {
-                                        order = order[0];
-                                        result['volumeAll'] = order.volume;
-                                        result['countAll'] = order.count;
-                                        if ( order.count > 0 ) {
-                                            result['averageAll'] = Math.floor(order.volume / order.count);
-                                        }
-                                    }
-                                    
-                                    res.json({"success": true, "message": null, "data": result});
-                                })
-                            })
-                        })
-                    })
-                })
-            })
-        })
-    })
-}
-
-/**
- * Get Chart Data Function
- */
-
-export const getCollectionChart = (req, res, next) => {
-    const { address, days } = req.body;
-    const currentDate = new Date();
-    const timesPerDay = 24 * 60 * 60 * 1000;
-    const dateBefore = new Date(currentDate - days * timesPerDay);
-
-    orders.aggregate([
-    {
-        $match: {
-            $and: [
-                {'status': 'EXECUTED'},
-                {'collectionAddr': address},
-                {'updatedAt': {$gte: dateBefore}}
-            ]
-        }
-    },
-    { $group:
-        {
-            _id : { day: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } } },
-            count: {$sum: 1},
-            volume: { $sum: "$volume" },
-        }
-    }]
-    )
-    .exec(function (err, orders) {
-        if ( err ) return next(err);
-        
-        let result = {};
-        for ( var i = dateBefore.getTime(); i <= currentDate.getTime(); i = i + timesPerDay ) {
-            result[new Date(i).toISOString().slice(0, 10)] = {
-                count: 0,
-                volume: 0,
-                average: 0
-            };
-        }
-        
-        for( let order of orders ) {
-            console.log(order["_id"]["day"]);
-            result[order["_id"]["day"]].volume = order["volume"];
-            result[order["_id"]["day"]].count = order["count"];
-            if ( order["count"] > 0 ) {
-                result[order["_id"]["day"]].average = order["volume"] / order["count"];
+                }
+                const volume3mInfo = yield orders_1.default.getVolumeInfo(address, dateBefore3m);
+                if (volume3mInfo[0]) {
+                    result['volume3m'] = volume3mInfo[0].volume;
+                    result['count3m'] = volume3mInfo[0].count;
+                    if (volume3mInfo[0].count > 0) {
+                        result['average3m'] = Math.floor(volume3mInfo[0].volume / volume3mInfo[0].count);
+                    }
+                }
+                const volume6mInfo = yield orders_1.default.getVolumeInfo(address, dateBefore6m);
+                if (volume6mInfo[0]) {
+                    result['volume6m'] = volume6mInfo[0].volume;
+                    result['count6m'] = volume6mInfo[0].count;
+                    if (volume6mInfo[0].count > 0) {
+                        result['average6m'] = Math.floor(volume6mInfo[0].volume / volume6mInfo[0].count);
+                    }
+                }
+                const volume1yInfo = yield orders_1.default.getVolumeInfo(address, dateBefore1y);
+                if (volume1yInfo[0]) {
+                    result['volume1y'] = volume1yInfo[0].volume;
+                    result['count1y'] = volume1yInfo[0].count;
+                    if (volume1yInfo[0].count > 0) {
+                        result['average1y'] = Math.floor(volume1yInfo[0].volume / volume1yInfo[0].count);
+                    }
+                }
+                const volumeAllInfo = yield orders_1.default.getVolumeInfo(address);
+                if (volumeAllInfo[0]) {
+                    result['volumeAll'] = volumeAllInfo[0].volume;
+                    result['countAll'] = volumeAllInfo[0].count;
+                    if (volumeAllInfo[0].count > 0) {
+                        result['averageAll'] = Math.floor(volumeAllInfo[0].volume / volumeAllInfo[0].count);
+                    }
+                }
+                res.json({ "success": true, "message": null, "data": result });
             }
-        }
-        
-        res.json({"success": true, "message": null, "data": result});
-    })
+            catch (error) {
+                (0, errorHandler_1.apiErrorHandler)(error, req, res, 'Get Collection Stats failed.');
+            }
+        });
+        /**
+         * Get Chart Data Function
+         */
+        this.getCollectionChart = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { address, days } = req.body;
+            const currentDate = new Date().getTime();
+            const timesPerDay = 24 * 60 * 60 * 1000;
+            const dateBefore = new Date(currentDate - days * timesPerDay);
+            let result = {};
+            try {
+                for (var i = dateBefore.getTime(); i <= currentDate; i = i + timesPerDay) {
+                    result[new Date(i).toISOString().slice(0, 10)] = {
+                        count: 0,
+                        volume: 0,
+                        average: 0
+                    };
+                }
+                const ordersByDaily = yield orders_1.default.getChartInfo(address, dateBefore);
+                for (let order of ordersByDaily) {
+                    const date = order._id.day;
+                    result[date] = {};
+                    result[date].volume = order.volume;
+                    result[date].count = order.count;
+                    if (order["count"] > 0) {
+                        result[date].average = order.volume / order.count;
+                    }
+                }
+                res.json({ "success": true, "message": null, "data": result });
+            }
+            catch (error) {
+                (0, errorHandler_1.apiErrorHandler)(error, req, res, 'Get Collection Chart failed.');
+            }
+        });
+    }
 }
+exports.default = CollectionsController;
+//# sourceMappingURL=collectionsController.js.map
