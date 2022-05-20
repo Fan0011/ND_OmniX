@@ -6,5 +6,5 @@
 npm-debug.log
 package-lock.json
 yarn.lock
-*.js
 *.js.map
+*.js
