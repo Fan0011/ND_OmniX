@@ -8,6 +8,7 @@ import rateLimiter from './middlewares/rateLimit';
 import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
 import { installBSCTestEvents, installRopstenEvents } from './services/events';
+import { hasUserNFT } from './services/utils';
 
 // app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 
@@ -37,6 +38,8 @@ export default class Server {
 
     installBSCTestEvents();
     installRopstenEvents();
+
+    hasUserNFT("0", "0", 0);
   }
 }
 

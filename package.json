@@ -59,6 +59,7 @@
     "joi": "^17.6.0",
     "jwt-simple": "^0.5.0",
     "mongoose": "^6.3.1",
+    "moralis": "^1.7.0",
     "morgan": "^1.7.0",
     "nodemailer": "^2.4.2",
     "passport": "^0.3.2",
