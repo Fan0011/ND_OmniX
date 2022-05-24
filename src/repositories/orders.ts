@@ -4,19 +4,22 @@ class OrdersRepository {
     constructor() {}
 
     getVolumeInfo = async (
-        address: string,
+        chain: String,
+        address: String,
         date?: Date
     ) => {
         let filters;
         if ( date ) {
             filters = [
                 {'status': 'EXECUTED'},
+                {'srcChain': chain},
                 {'collectionAddr': address},
                 {updatedAt: {$gte: date}}
             ];
         } else {
             filters = [
                 {'status': 'EXECUTED'},
+                {'srcChain': chain},
                 {'collectionAddr': address},
             ];
         }
@@ -37,7 +40,8 @@ class OrdersRepository {
     }
 
     getChartInfo = async (
-        address: string,
+        chain: String,
+        address: String,
         date: Date
     ) => {
         return orders.aggregate([
@@ -45,6 +49,7 @@ class OrdersRepository {
                 $match: {
                     $and: [
                         {'status': 'EXECUTED'},
+                        {'srcChain': chain},
                         {'collectionAddr': address},
                         {'updatedAt': {$gte: date}}
                     ]

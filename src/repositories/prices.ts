@@ -4,7 +4,8 @@ class PricesRepository {
     constructor() {}
 
     getFloorPrices = async (
-        address: string
+        chain: String,
+        address: String
     ) => {
         const currentDate = new Date().getTime();
         const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
@@ -26,6 +27,7 @@ class PricesRepository {
         },
         {
             $match: {
+                chain,
                 collectionAddr: address,
             }
         },
@@ -41,10 +43,12 @@ class PricesRepository {
     }
 
     updatePrice = async (
-        collectionAddr: string,
+        chain: String,
+        collectionAddr: String,
         price: number
     ) => {
         let filters = [
+            {chain: chain},
             {collectionAddr: collectionAddr},
             {price: {$lte: price}}
         ];
@@ -52,6 +56,7 @@ class PricesRepository {
         prices.find({ $and: filters }).exec((err, order) => {
             if ( order.length == 0 ) {
                 const newPrice = new prices({ 
+                    chain: chain,
                     collectionAddr: collectionAddr,
                     price: price
                 });
@@ -59,6 +64,30 @@ class PricesRepository {
                return newPrice.save();
             }
         })
+    }
+
+    getChartInfo = async (
+        chain: String,
+        address: String,
+        date: Date
+    ) => {
+        return prices.aggregate([
+            {
+                $match: {
+                    $and: [
+                        {'chain': chain},
+                        {'collectionAddr': address},
+                        {'updatedAt': {$gte: date}}
+                    ]
+                }
+            },
+            { $group:
+                {
+                    _id : { day: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } } },
+                    price: { $min: "$price" },
+                }
+            }]
+        );
     }
 }
 

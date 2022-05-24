@@ -4,9 +4,10 @@ class CollectionsRepository {
     constructor() {}
 
     getCollectionByAddress = async (
-        address: string
+        chain: String,
+        address: String
     ) => {
-        return collections.findOne({ address })
+        return collections.findOne({ chain, address })
         .sort('nonce');
     }
 
@@ -25,7 +26,9 @@ class CollectionsRepository {
         mediumLink: string,
         discordLink: string,
         isVerified: boolean,
-        isExplicit: boolean
+        isExplicit: boolean,
+        standard: String,
+        chain: String
     ) => {
         const collection = new collections({
             address,
@@ -42,7 +45,9 @@ class CollectionsRepository {
             mediumLink,
             discordLink,
             isVerified,
-            isExplicit
+            isExplicit,
+            standard,
+            chain
         });
     
         return collection.save();

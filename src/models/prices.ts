@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const pricesSchema = new Schema({
     collectionAddr: String,
     price: Number,
+    chain: String,
 }, 
 { timestamps: true });
 

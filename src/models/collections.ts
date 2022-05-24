@@ -18,6 +18,11 @@ const collectionsSchema = new Schema({
     discordLink: String,
     isVerified: Boolean,
     isExplicit: Boolean,
+    standard: {
+        type: String,
+        default: 'erc'
+    },
+    chain: String
 });
 
 export default mongoose.model('collections', collectionsSchema);

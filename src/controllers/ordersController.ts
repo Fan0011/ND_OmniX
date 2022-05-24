@@ -30,10 +30,11 @@ export default class OrdersController {
    *    "from": 12
    * }
    * @param sort: Sort by option. EXPIRING_SOON, NEWEST, PRICE_ASC, PRICE_DESC
+   * @param chain: Chain of the collection
    */
 
   getOrders = async (req: Request, res: Response, next: NextFunction) => {
-    const { isOrderAsk, collection, tokenId, signer, strategy, currency, min, max, startTime, endTime, status, first, from, sort } = req.body;
+    const { isOrderAsk, collection, tokenId, signer, strategy, currency, min, max, startTime, endTime, status, first, from, sort, chain } = req.body;
     
     const filters = new Array;
     if ( isOrderAsk ) {
@@ -68,6 +69,9 @@ export default class OrdersController {
     }
     if ( status?.length > 0 ) {
         filters.push({status: {$in:status}});
+    }
+    if ( chain ) {
+        filters.push({srcChain: chain});
     }
 
     let sorting = new Object;
@@ -177,7 +181,7 @@ export default class OrdersController {
     try {
         const updatedOrder = await orders.updateOrderStatus(hash, status);
         if ( status == 'EXECUTED' ) {
-            await prices.updatePrice(updatedOrder.collectionAddr, updatedOrder.price);
+            await prices.updatePrice(updatedOrder.srcChain, updatedOrder.collectionAddr, updatedOrder.price);
         }
 
         return res.json({

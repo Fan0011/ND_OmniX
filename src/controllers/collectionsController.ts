@@ -12,10 +12,10 @@ export default class CollectionsController {
   * Get Collection Function
   */
   getCollection = async (req: Request, res: Response, next: NextFunction) => {
-    const { address } = req.body;
+    const { chain, address } = req.body;
 
     try {
-        const collection = await collections.getCollectionByAddress(address);
+        const collection = await collections.getCollectionByAddress(chain, address);
         
         res.json({"success": true, "message": null, "data": collection});
     } catch (error) {
@@ -42,7 +42,9 @@ export default class CollectionsController {
         mediumLink,
         discordLink,
         isVerified,
-        isExplicit
+        isExplicit,
+        standard,
+        chain
     } = req.body;
     
     try {
@@ -61,7 +63,9 @@ export default class CollectionsController {
             mediumLink,
             discordLink,
             isVerified,
-            isExplicit
+            isExplicit,
+            standard,
+            chain
         );
 
         res.json({"success": true, "message": null, "data": collection});
@@ -74,7 +78,7 @@ export default class CollectionsController {
   * Get Collections Stats Function
   */
   getCollectionStat = async (req: Request, res: Response, next: NextFunction) => {
-    const { address } = req.body;
+    const { chain, address } = req.body;
     const currentDate = new Date().getTime();
     const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
     const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000);
@@ -85,6 +89,7 @@ export default class CollectionsController {
 
     try {
         let result = {
+            'chain': chain,
             'address': address,
             'floorPrice': 0,
             'floorChange24h': 0,
@@ -110,7 +115,7 @@ export default class CollectionsController {
             'countAll': 0
         };
 
-        const floor = await prices.getFloorPrices(address);
+        const floor = await prices.getFloorPrices(chain, address);
         if ( floor[0] ) {
             result['floorPrice'] = floor[0].floor;
             if ( floor[0].floor24h > 0 ) {
@@ -130,7 +135,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume24hInfo = await orders.getVolumeInfo(address, dateBefore24h);
+        const volume24hInfo = await orders.getVolumeInfo(chain, address, dateBefore24h);
         if ( volume24hInfo[0] ) {
             result['volume24h'] = volume24hInfo[0].volume;
             result['count24h'] = volume24hInfo[0].count;
@@ -139,7 +144,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume7dInfo = await orders.getVolumeInfo(address, dateBefore7d);
+        const volume7dInfo = await orders.getVolumeInfo(chain, address, dateBefore7d);
         if ( volume7dInfo[0] ) {
             result['volume7d'] = volume7dInfo[0].volume;
             result['count7d'] = volume7dInfo[0].count;
@@ -148,7 +153,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume1mInfo = await orders.getVolumeInfo(address, dateBefore30d);
+        const volume1mInfo = await orders.getVolumeInfo(chain, address, dateBefore30d);
         if ( volume1mInfo[0] ) {
             result['volume1m'] = volume1mInfo[0].volume;
             result['count1m'] = volume1mInfo[0].count;
@@ -157,7 +162,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume3mInfo = await orders.getVolumeInfo(address, dateBefore3m);
+        const volume3mInfo = await orders.getVolumeInfo(chain, address, dateBefore3m);
         if ( volume3mInfo[0] ) {
             result['volume3m'] = volume3mInfo[0].volume;
             result['count3m'] = volume3mInfo[0].count;
@@ -166,7 +171,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume6mInfo = await orders.getVolumeInfo(address, dateBefore6m);
+        const volume6mInfo = await orders.getVolumeInfo(chain, address, dateBefore6m);
         if ( volume6mInfo[0] ) {
             result['volume6m'] = volume6mInfo[0].volume;
             result['count6m'] = volume6mInfo[0].count;
@@ -175,7 +180,7 @@ export default class CollectionsController {
             }
         }
 
-        const volume1yInfo = await orders.getVolumeInfo(address, dateBefore1y);
+        const volume1yInfo = await orders.getVolumeInfo(chain, address, dateBefore1y);
         if ( volume1yInfo[0] ) {
             result['volume1y'] = volume1yInfo[0].volume;
             result['count1y'] = volume1yInfo[0].count;
@@ -184,7 +189,7 @@ export default class CollectionsController {
             }
         }
         
-        const volumeAllInfo = await orders.getVolumeInfo(address);
+        const volumeAllInfo = await orders.getVolumeInfo(chain, address);
         if ( volumeAllInfo[0] ) {
             result['volumeAll'] = volumeAllInfo[0].volume;
             result['countAll'] = volumeAllInfo[0].count;
@@ -204,7 +209,7 @@ export default class CollectionsController {
    */
 
   getCollectionChart = async (req: Request, res: Response, next: NextFunction) => {
-    const { address, days } = req.body;
+    const { chain, address, days } = req.body;
     const currentDate = new Date().getTime();
     const timesPerDay = 24 * 60 * 60 * 1000;
     const dateBefore = new Date(currentDate - days * timesPerDay);
@@ -219,7 +224,7 @@ export default class CollectionsController {
             };
         }
 
-        const ordersByDaily = await orders.getChartInfo(address, dateBefore);
+        const ordersByDaily = await orders.getChartInfo(chain, address, dateBefore);
         
         for ( let order of ordersByDaily ) {
             const date = order._id.day;
@@ -229,6 +234,13 @@ export default class CollectionsController {
             if ( order["count"] > 0 ) {
                 result[date].average = order.volume / order.count;
             }
+        }
+
+        const floorPriceByDaily = await prices.getChartInfo(chain, address, dateBefore);
+        
+        for ( let floorPrice of floorPriceByDaily ) {
+            const date = floorPrice._id.day;
+            result[date].floorPrice = floorPrice.price;
         }
 
         res.json({"success": true, "message": null, "data": result});

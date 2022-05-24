@@ -23,7 +23,7 @@ const ordersSchema = new Schema({
         type: String,
         enum: ['CANCELLED', 'EXECUTED', 'EXPIRED', 'VALID'],
         default: 'VALID'
-    }
+    },
 }, 
 { timestamps: true });
 
