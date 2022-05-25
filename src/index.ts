@@ -1,7 +1,6 @@
 import { Application, urlencoded, json } from 'express';
 import * as morgan from 'morgan';
 import * as helmet from 'helmet';
-import * as winston from 'winston';
 import * as mongoose from 'mongoose';
 
 import rateLimiter from './middlewares/rateLimit';
@@ -41,6 +40,5 @@ export default class Server {
 }
 
 process.on('beforeExit', function (err) {
-  winston.error(JSON.stringify(err));
   console.error(err);
 });

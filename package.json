@@ -3,13 +3,10 @@
   "version": "1.0.0",
   "description": "Omni-X Api",
   "scripts": {
-    "start": "npm run transpile && node server.js",
-    "dev": "concurrently \"npm:watch\" \"npm:serve\"",
-    "serve": "nodemon server.js",
-    "watch": "tsc -w",
-    "transpile": "tsc",
-    "seed": "npm run transpile && node src/db/seed.js",
-    "lint": "tslint -c tslint.json -p tsconfig.json"
+    "start": "node dist/index.js",
+    "postinstall": "tsc",
+    "watch-node": "nodemon dist/index.js",
+    "watch-ts": "tsc -w"
   },
   "keywords": [
     "Express",

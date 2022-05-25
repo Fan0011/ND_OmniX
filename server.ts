@@ -9,7 +9,7 @@ const app: Application = express();
 const server: Server = new Server(app);
 const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-app.listen(port, 'localhost', function () {
+app.listen(port, () => {
   console.info(`Server running on : http://localhost:${port}`);
 }).on('error', (err: any) => {
   if (err.code === 'EADDRINUSE') {
