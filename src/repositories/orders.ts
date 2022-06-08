@@ -1,4 +1,4 @@
-import orders from "../models/orders";
+import orders from "../models/orders"
 
 class OrdersRepository {
     constructor() {}
@@ -8,20 +8,20 @@ class OrdersRepository {
         address: String,
         date?: Date
     ) => {
-        let filters;
+        let filters
         if ( date ) {
             filters = [
                 {'status': 'EXECUTED'},
                 {'srcChain': chain},
                 {'collectionAddr': address},
                 {updatedAt: {$gte: date}}
-            ];
+            ]
         } else {
             filters = [
                 {'status': 'EXECUTED'},
                 {'srcChain': chain},
                 {'collectionAddr': address},
-            ];
+            ]
         }
         return orders.aggregate([
             {
@@ -36,7 +36,7 @@ class OrdersRepository {
                     volume: { $sum: "$volume" },
                 }
             }]
-        );
+        )
     }
 
     getChartInfo = async (
@@ -62,30 +62,30 @@ class OrdersRepository {
                     volume: { $sum: "$volume" },
                 }
             }]
-        );
+        )
     }
 
     getOrders = async (
         filters: Array<Object>,
-        sorting: Object,
+        sorting: any,
         from: number,
         first: number,
     ) => {
-        return orders.find({ '$and': filters }).skip(from??0).limit(first??20).sort(sorting);
+        return orders.find({ '$and': filters }).skip(from??0).limit(first??20).sort(sorting)
     }
 
     createOrder = async (
         data: Object
     ) => {
-        const order = new orders(data);
-        return order.save();
+        const order = new orders(data)
+        return order.save()
     }
 
     getUserNonce = async (
         signer: string
     ) => {
         return orders.findOne({ signer })
-        .sort('nonce');
+        .sort('nonce')
     }
 
     updateOrderStatus = async (
@@ -96,8 +96,8 @@ class OrdersRepository {
             $set: { 'status': status, 'signatureHash': null },
         }, {
             new: true
-        });
+        })
     }
 }
 
-export default new OrdersRepository();
+export default new OrdersRepository()

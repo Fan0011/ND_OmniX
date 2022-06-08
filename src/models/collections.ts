@@ -1,6 +1,6 @@
-import * as mongoose from "mongoose";
+import * as mongoose from "mongoose"
 
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 
 const collectionsSchema = new Schema({
     address: String,
@@ -23,6 +23,6 @@ const collectionsSchema = new Schema({
         default: 'erc'
     },
     chain: String
-});
+})
 
-export default mongoose.model('collections', collectionsSchema);
+export default mongoose.model('collections', collectionsSchema)

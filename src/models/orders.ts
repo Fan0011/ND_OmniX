@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import * as mongoose from "mongoose"
+const Schema = mongoose.Schema
 
 const ordersSchema = new Schema({
     isOrderAsk: Boolean,
@@ -25,6 +25,6 @@ const ordersSchema = new Schema({
         default: 'VALID'
     },
 }, 
-{ timestamps: true });
+{ timestamps: true })
 
-export default mongoose.model('orders', ordersSchema);
+export default mongoose.model('orders', ordersSchema)

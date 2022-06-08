@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { apiErrorHandler } from '../handlers/errorHandler';
+import { Request, Response, NextFunction } from 'express'
+import { apiErrorHandler } from '../handlers/errorHandler'
 
-import collections from "../repositories/collections";
-import orders from "../repositories/orders";
-import prices from "../repositories/prices";
+import collections from "../repositories/collections"
+import orders from "../repositories/orders"
+import prices from "../repositories/prices"
 
 export default class OrdersController {
   constructor() { }
@@ -34,61 +34,61 @@ export default class OrdersController {
    */
 
   getOrders = async (req: Request, res: Response, next: NextFunction) => {
-    const { isOrderAsk, collection, tokenId, signer, strategy, currency, min, max, startTime, endTime, status, first, from, sort, chain } = req.body;
+    const { isOrderAsk, collection, tokenId, signer, strategy, currency, min, max, startTime, endTime, status, first, from, sort, chain } = req.body
     
-    const filters = new Array;
+    const filters = new Array
     if ( isOrderAsk ) {
-        filters.push({isOrderAsk: isOrderAsk});
+        filters.push({isOrderAsk: isOrderAsk})
     }
     if ( collection ) {
-        filters.push({collectionAddr: collection});
+        filters.push({collectionAddr: collection})
     }
     if ( tokenId ) {
-        filters.push({tokenId: tokenId});
+        filters.push({tokenId: tokenId})
     }
     if ( signer ) {
-        filters.push({signer: signer});
+        filters.push({signer: signer})
     }
     if ( strategy ) {
-        filters.push({strategy: strategy});
+        filters.push({strategy: strategy})
     }
     if ( currency ) {
-        filters.push({currency: currency});
+        filters.push({currency: currency})
     }
     if ( min > 0 ) {
-        filters.push({price: {$gte:min}});
+        filters.push({price: {$gte:min}})
     }
     if ( max > 0 ) {
-        filters.push({price: {$lte:max}});
+        filters.push({price: {$lte:max}})
     }
     if ( startTime > 0 ) {
-        filters.push({startTime: {$lte:startTime}});
+        filters.push({startTime: {$lte:startTime}})
     }
     if ( endTime > 0 ) {
-        filters.push({endTime: {$gte:endTime}});
+        filters.push({endTime: {$gte:endTime}})
     }
     if ( status?.length > 0 ) {
-        filters.push({status: {$in:status}});
+        filters.push({status: {$in:status}})
     }
     if ( chain ) {
-        filters.push({srcChain: chain});
+        filters.push({srcChain: chain})
     }
 
-    let sorting = new Object;
+    let sorting = new Object
     if ( sort == 'EXPIRING_SOON' )
     {
-        sorting = {endTime: 1};
+        sorting = {endTime: 1}
     }
     else if ( sort == 'NEWEST' ) {
-        sorting = {startTime: 1};
+        sorting = {startTime: 1}
     }
     else if ( sort == 'PRICE_ASC' ) {
-        sorting = {price: 1};
+        sorting = {price: 1}
     }
     else if ( sort == 'PRICE_DESC' ) {
-        sorting = {price: -1};
+        sorting = {price: -1}
     } else {
-        sorting = {_id: 1};
+        sorting = {_id: 1}
     }
 
     if ( status?.length == undefined ) {
@@ -96,18 +96,18 @@ export default class OrdersController {
             "success": false,
             "name": "Request Error",
             "message": 'Each value in status must be one of the following values: CANCELLED, EXECUTED, EXPIRED, VALID'
-        });
+        })
     }
 
     try {
-        const filteredOrders = await orders.getOrders(filters, sorting, from, first);
+        const filteredOrders = await orders.getOrders(filters, sorting, from, first)
         return res.json({
             "success": true,
             "message": null,
             "data": filteredOrders,
-        });
+        })
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get Orders failed.');
+        apiErrorHandler(error, req, res, 'Get Orders failed.')
     }
   }
 
@@ -128,7 +128,7 @@ export default class OrdersController {
         signature, 
         srcChain, 
         destChain 
-    } = req.body;
+    } = req.body
 
     try {
         const order = await orders.createOrder({ 
@@ -148,49 +148,49 @@ export default class OrdersController {
                 srcChain, 
                 destChain,
                 volume: price * amount
-            });
+            })
         return res.json({
             "success": true,
             "message": null,
             "data": order,
-        });
+        })
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get Orders failed.');
+        apiErrorHandler(error, req, res, 'Get Orders failed.')
     }
   }
 
   getNonce = async (req: Request, res: Response, next: NextFunction) => {
-    const { signer } = req.body;
+    const { signer } = req.body
 
     try {
-        const order = await orders.getUserNonce(signer);
+        const order = await orders.getUserNonce(signer)
         
         return res.json({
             "success": true, 
             "message": null, 
             "data": order?(order.nonce + 1):1
-        });
+        })
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get User Nonce failed.');
+        apiErrorHandler(error, req, res, 'Get User Nonce failed.')
     }
   }
 
   changeOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
-    const { hash, status } = req.body;
+    const { hash, status } = req.body
 
     try {
-        const updatedOrder = await orders.updateOrderStatus(hash, status);
+        const updatedOrder = await orders.updateOrderStatus(hash, status)
         if ( status == 'EXECUTED' ) {
-            await prices.updatePrice(updatedOrder.srcChain, updatedOrder.collectionAddr, updatedOrder.price);
+            await prices.updatePrice(updatedOrder.srcChain, updatedOrder.collectionAddr, updatedOrder.price)
         }
 
         return res.json({
             "success": true,
             "message": null,
             "data": updatedOrder
-        });
+        })
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get User Nonce failed.');
+        apiErrorHandler(error, req, res, 'Get User Nonce failed.')
     }
   }
 }

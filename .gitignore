@@ -9,3 +9,4 @@ yarn.lock
 *.js.map
 *.js
 /dist
+/uploads

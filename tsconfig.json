@@ -6,8 +6,7 @@
     "sourceMap": true,
     "strict": true,
     "resolveJsonModule": true,
-    "allowJs": false,
-    "outDir": "dist"
+    "allowJs": false
   },
   "files.exclude": {
     "**/.git": true,

@@ -1,4 +1,4 @@
-import prices from "../models/prices";
+import prices from "../models/prices"
 
 class PricesRepository {
     constructor() {}
@@ -7,10 +7,10 @@ class PricesRepository {
         chain: String,
         address: String
     ) => {
-        const currentDate = new Date().getTime();
-        const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000);
-        const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000);
-        const dateBefore30d = new Date(currentDate - 30 * 24 * 60 * 60 * 1000);
+        const currentDate = new Date().getTime()
+        const dateBefore24h = new Date(currentDate - 24 * 60 * 60 * 1000)
+        const dateBefore7d = new Date(currentDate - 7 * 24 * 60 * 60 * 1000)
+        const dateBefore30d = new Date(currentDate - 30 * 24 * 60 * 60 * 1000)
 
         return prices.aggregate([{
             $addFields: {
@@ -39,7 +39,7 @@ class PricesRepository {
                 floor7d: { $min: "$floor7d" },
                 floor30d: { $min: "$floor30d" }
             }
-        }]);
+        }])
     }
 
     updatePrice = async (
@@ -51,7 +51,7 @@ class PricesRepository {
             {chain: chain},
             {collectionAddr: collectionAddr},
             {price: {$lte: price}}
-        ];
+        ]
 
         prices.find({ $and: filters }).exec((err, order) => {
             if ( order.length == 0 ) {
@@ -59,9 +59,9 @@ class PricesRepository {
                     chain: chain,
                     collectionAddr: collectionAddr,
                     price: price
-                });
+                })
 
-               return newPrice.save();
+               return newPrice.save()
             }
         })
     }
@@ -87,8 +87,8 @@ class PricesRepository {
                     price: { $min: "$price" },
                 }
             }]
-        );
+        )
     }
 }
 
-export default new PricesRepository();
+export default new PricesRepository()

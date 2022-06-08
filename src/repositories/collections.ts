@@ -1,4 +1,4 @@
-import collections from "../models/collections";
+import collections from "../models/collections"
 
 class CollectionsRepository {
     constructor() {}
@@ -8,7 +8,7 @@ class CollectionsRepository {
         address: String
     ) => {
         return collections.findOne({ chain, address })
-        .sort('nonce');
+        .sort('nonce')
     }
 
     addCollection = async(
@@ -48,10 +48,10 @@ class CollectionsRepository {
             isExplicit,
             standard,
             chain
-        });
+        })
     
-        return collection.save();
+        return collection.save()
     }
 }
 
-export default new CollectionsRepository();
+export default new CollectionsRepository()

@@ -1,11 +1,11 @@
-import * as mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import * as mongoose from "mongoose"
+const Schema = mongoose.Schema
 
 const pricesSchema = new Schema({
     collectionAddr: String,
     price: Number,
     chain: String,
 }, 
-{ timestamps: true });
+{ timestamps: true })
 
-export default mongoose.model('prices', pricesSchema);
+export default mongoose.model('prices', pricesSchema)
