@@ -13,14 +13,22 @@ export default class UsersController {
    * @param next 
    */
   getNFTs = async (req: Request, res: Response, next: NextFunction) => {
-    const { chain, address } = req.body
+    const { address } = req.body
+    const chains = ['eth', 'bsc', 'matic', 'avalanche', 'fantom', 'optimism', 'arbitrum']
 
     try {
-        const nfts = await getUserNFTs(chain, address)
-
-        res.json({"success": true, "message": null, "data": nfts})
+      let nfts = []
+      for ( var i in chains ) {
+        const nft_list = await getUserNFTs(chains[i], address)
+        nft_list.map((obj: Object) => {
+          obj['chain'] = chains[i];
+          return obj;
+        })
+        nfts = nfts.concat(nft_list)
+      }
+      res.json({"success": true, "message": null, "data": nfts})
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get NFTs failed.')
+      apiErrorHandler(error, req, res, 'Get NFTs failed.')
     }
   }
 
