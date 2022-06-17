@@ -3,6 +3,7 @@ import * as morgan from 'morgan'
 import * as helmet from 'helmet'
 import * as mongoose from 'mongoose'
 import * as multer from 'multer'
+import * as cors from 'cors'
 
 import rateLimiter from './middlewares/rateLimit'
 import { unCoughtErrorHandler } from './handlers/errorHandler'
@@ -32,6 +33,7 @@ export default class Server {
     app.use(urlencoded({ extended: true }))
     app.use(json())
     app.use(helmet())
+    app.use(cors())
     app.use(rateLimiter()) //  apply to all requests
     app.use(unCoughtErrorHandler)
     app.use(multer({dest:'./uploads/'}).any());
