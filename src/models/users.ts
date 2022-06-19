@@ -17,7 +17,7 @@ const usersSchema = new Schema({
     website: {
         type: String
     },
-    photo: {
+    avatar: {
         type: String
     },
     banners: [{
@@ -31,7 +31,7 @@ const usersSchema = new Schema({
     }],
     followings: [{
         type: String
-    }],
+    }]
 }, 
 { timestamps: true })
 

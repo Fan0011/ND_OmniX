@@ -2,6 +2,7 @@ import { Application } from 'express'
 import ordersRouter from './ordersRouter'
 import collectionsRouter from './collectionsRouter'
 import usersRouter from './usersRouter'
+const express = require('express');
 
 export default class Routes {
 
@@ -12,5 +13,7 @@ export default class Routes {
     app.use('/api/v1/collections', collectionsRouter)
     // users routes
     app.use('/api/v1/users', usersRouter)
+    // uploads
+    app.use("/uploads", express.static(__dirname + "/../../uploads")); 
   }
 }

@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
-    "body-parser": "^1.15.1",
     "compression": "^1.6.2",
     "concurrently": "^6.0.2",
     "cors": "^2.8.5",
