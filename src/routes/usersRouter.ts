@@ -10,6 +10,7 @@ class CollectionsRouter {
   }
   intializeRoutes() {
     this.router.route('/nfts').get(this.usersController.getNFTs)
+    this.router.route('/profile/:address').get(this.usersController.getProfile)
     this.router.route('/profile').post(this.usersController.updateProfile)
     this.router.route('/add_banner').post(this.usersController.addBanner)
     this.router.route('/remove_banner').post(this.usersController.removeBanner)

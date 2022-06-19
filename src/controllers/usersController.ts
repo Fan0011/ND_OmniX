@@ -31,18 +31,39 @@ export default class UsersController {
       apiErrorHandler(error, req, res, 'Get NFTs failed.')
     }
   }
+  
+  getProfile = async(req, res, next) =>{
+    const { address } = req.params   
+    const user = await users.getProfile(address)
+    return res.status(200).json({
+      "success": true,
+      "message": null,
+      "data": user,
+    })
+  }
 
-  updateProfile = async (req, res, next) => {
+  updateProfile = async (req, res) => {
     try {
       const { address, username, bio, twitter, website } = req.body
-      var photo = ''
-      if ( req.files && req.files[0] ) {
-        photo = req.files[0].path
+      const files = req.files;
+      var avatar = '', banner_1 = '', banner_2 = '', banner_3 = '';
+
+      for (const key of Object.keys(files)) {
+        const file = files[key];
+        if ( file['fieldname'] === 'avatar' ) {
+          avatar = file['path']
+        } else if ( file['fieldname'] === 'banner_1' ) {
+          banner_1 = file['path']
+        } else if ( file['fieldname'] === 'banner_2' ) {
+          banner_2 = file['path']
+        } else if ( file['fieldname'] === 'banner_3' ) {
+          banner_3 = file['path']
+        }
       }
 
-      const user = users.updateProfile( address, username, bio, twitter, website, photo )
+      const user = await users.updateProfile( address, username, bio, twitter, website, avatar, banner_1, banner_2, banner_3 )
 
-      return res.json({
+      return res.status(200).json({
         "success": true,
         "message": null,
         "data": user,
