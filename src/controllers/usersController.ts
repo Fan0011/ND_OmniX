@@ -13,7 +13,7 @@ export default class UsersController {
    * @param next 
    */
   getNFTs = async (req: Request, res: Response, next: NextFunction) => {
-    const { address } = req.body
+    const { address } = req.params
     const chains = ['eth', 'bsc', 'matic', 'avalanche', 'fantom', 'optimism', 'arbitrum']
 
     try {
