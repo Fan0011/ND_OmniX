@@ -13,8 +13,9 @@ export default class UsersController {
    * @param next 
    */
   getNFTs = async (req: Request, res: Response, next: NextFunction) => {
-    const { address } = req.body
-    const chains = ['eth', 'bsc', 'matic', 'avalanche', 'fantom', 'optimism', 'arbitrum']
+    const { address } = req.params
+    // const chains = ['eth', 'bsc', 'matic', 'avalanche', 'fantom', 'optimism', 'arbitrum']
+    const chains = ['bsc testnet', 'rinkeby', 'mumbai', 'avalanche testnet']
 
     try {
       let nfts = []
