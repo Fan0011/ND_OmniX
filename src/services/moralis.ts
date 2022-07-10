@@ -1,4 +1,5 @@
 /* import moralis */
+import * as fetch from 'node-fetch'
 const Moralis = require("moralis/node")
 const serverUrl = process.env.MORALIS_SERVER
 const appId = process.env.MORALIS_APP_ID
@@ -8,6 +9,7 @@ const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const hasUserNFT = async (chain: string, signer: string, collection: string, tokenId) => {
     try {
+        await timer(10);
         await Moralis.start({ serverUrl, appId, moralisSecret })
 
         if ( tokenId == null ) {
@@ -36,6 +38,7 @@ export const hasUserNFT = async (chain: string, signer: string, collection: stri
 
 export const getUserNFTs = async (chain: string, address: string) => {
     try {
+        await timer(10);
         await Moralis.start({ serverUrl, appId, moralisSecret })
     
         let cursor = null, nfts = []
@@ -48,7 +51,8 @@ export const getUserNFTs = async (chain: string, address: string) => {
             const nft_result = await Moralis.Web3API.account.getNFTs(options)
             cursor = nft_result.cursor
             nfts = nfts.concat(nft_result.result)
-        } while ( cursor !== "" )
+            await timer(10);
+        } while ( cursor !== "" && cursor !== null )
         
         return nfts
     } catch (err) {
@@ -59,17 +63,27 @@ export const getUserNFTs = async (chain: string, address: string) => {
 
 export const getNFTsFromCollection = async (chain: string, address: string, cursor = null) => {
     try {
-			// await timer(1000);
-			const limit = 30;
-			await Moralis.start({ serverUrl, appId, moralisSecret })
-			const options = {
-					chain,
-					address,
-					cursor,
-					limit
-			}
-			const nft_result = await Moralis.Web3API.token.getAllTokenIds(options)
-			return nft_result
+        await timer(10);
+        const limit = 30;
+        await Moralis.start({ serverUrl, appId, moralisSecret })
+        const options = {
+            chain,
+            address,
+            cursor,
+            limit
+        }
+        const nft_result = await Moralis.Web3API.token.getAllTokenIds(options)
+        const result = [];
+        for ( var i = 0; i < nft_result.result.length; i ++ ) {
+            const nft = nft_result.result[i];
+            if ( nft.metadata == null && nft.token_uri ) {
+                const resp = await fetch(nft.token_uri);
+                nft.metadata = await resp.text();
+            }
+            result.push(nft);
+        }
+        nft_result.result = result
+        return nft_result
     } catch (err) {
         console.log("moralis getNFTsFromCollection err?", err)
         return {result: []}
@@ -78,7 +92,7 @@ export const getNFTsFromCollection = async (chain: string, address: string, curs
 
 export const getNFTOwnerCntFromCollection = async (chain: string, address: string) => {
 	try {
-		// await timer(1000);
+        await timer(10);
 		await Moralis.start({ serverUrl, appId, moralisSecret })
 		let cursor = null;
 		let owners = {};
@@ -107,7 +121,7 @@ export const getNFTOwnerCntFromCollection = async (chain: string, address: strin
 
 export const getNFTCntFromCollection = async (chain: string, address: string) => {
 	try {
-		// await timer(1000);
+        await timer(10);
 		await Moralis.start({ serverUrl, appId, moralisSecret })
 		const response = await Moralis.Web3API.token.getAllTokenIds({
 			address,
@@ -121,12 +135,17 @@ export const getNFTCntFromCollection = async (chain: string, address: string) =>
 }
 export const getTokenMetadata = async (chain: string, address: string, token_id: string) => {
 	try {
+        await timer(10);
 		await Moralis.start({ serverUrl, appId, moralisSecret })
 		const tokenIdMetadata = await Moralis.Web3API.token.getTokenIdMetadata({
 			chain,
 			address,
 			token_id
-		});
+        });
+        if ( tokenIdMetadata.metadata == null && tokenIdMetadata.token_uri ) {
+            const resp = await fetch(tokenIdMetadata.token_uri);
+            tokenIdMetadata.metadata = await resp.text();
+        }
 
 		return tokenIdMetadata;
 	} catch (err) {
