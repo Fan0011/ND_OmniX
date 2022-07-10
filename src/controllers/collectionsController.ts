@@ -4,6 +4,7 @@ import { apiErrorHandler } from '../handlers/errorHandler'
 import collections from "../repositories/collections"
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
+import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getNFTCntFromCollection, getTokenMetadata } from '../services/moralis'
 
 export default class CollectionsController {
   constructor() { }
@@ -246,6 +247,67 @@ export default class CollectionsController {
         res.json({"success": true, "message": null, "data": result})
     } catch (error) {
         apiErrorHandler(error, req, res, 'Get Collection Chart failed.')
+    }
+  }
+
+  /**
+   * Get NFTs Function
+   * @param req 
+   * @param res 
+   * @param next 
+   */
+  getNFTs = async (req: Request, res: Response, next: NextFunction) => {
+    const { chain, address, cursor } = req.body
+
+    try {
+      var nft_list = await getNFTsFromCollection(chain, address, cursor)
+			if (nft_list.result.length != 0) {
+				nft_list.result.map((obj: Object) => {
+					obj['chain'] = chain;
+					return obj;
+				})
+			}
+			return res.json({"success": true, "message": null, "data": nft_list.result, cursor: nft_list.cursor})
+    } catch (error) {
+			console.log("Collection getNFTs error ? ", error)
+      apiErrorHandler(error, req, res, 'Get NFTs failed.')
+    }
+  }
+
+	/**
+   * Get getNFTInfo Function
+   * @param req 
+   * @param res 
+   * @param next 
+   */
+	 getNFTInfo = async (req: Request, res: Response, next: NextFunction) => {
+		const { address, tokenId, chain } = req.params
+
+    try {
+			const nftMetaData = await getTokenMetadata(chain, address, tokenId)
+			return res.json({"success": true, "message": null, "data": nftMetaData})
+    } catch (error) {
+			console.log("Collection getNFTInfo error ? ", error)
+      apiErrorHandler(error, req, res, 'Get NFTs failed.')
+    }
+  }
+	/**
+   * Get Collection Info Function
+   * @param req 
+   * @param res 
+   * @param next 
+   */
+	getCollectionInfo = async (req: Request, res: Response, next: NextFunction) => {
+    const { chain, address } = req.params
+
+    try {
+      const cntOwner = await getNFTOwnerCntFromCollection(chain, address)
+			const cntItem = await getNFTCntFromCollection(chain, address)
+
+			return res.json({"success": true, "message": null, "data": {owner: cntOwner, item: cntItem}})
+    } catch (error) {
+			console.log("Collection getCollectionInfo error ? ", error)
+      apiErrorHandler(error, req, res, 'Get NFTs failed.')
     }
   }
 }
