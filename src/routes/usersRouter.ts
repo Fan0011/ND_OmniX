@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import UsersController from '../controllers/usersController'
 
-class CollectionsRouter {
+class UsersRouter {
   router = Router()
   usersController = new UsersController()
 
@@ -22,4 +22,4 @@ class CollectionsRouter {
     this.router.route('/remove_following').post(this.usersController.removeFollowing)
   }
 }
-export default new CollectionsRouter().router
+export default new UsersRouter().router
