@@ -103,12 +103,7 @@ export const getNFTOwnerCntFromCollection = async (chain: string, address: strin
 				cursor,
 			});
 			for (const owner of response.result) {
-				owners[owner.owner_of] = {
-					amount: owner.amount,
-					owner: owner.owner_of,
-					tokenId: owner.token_id,
-					tokenAddress: owner.token_address,
-				};
+				owners[owner.owner_of] = 1;
 			}
 			cursor = response.cursor;
 		} while (cursor != "" && cursor != null);

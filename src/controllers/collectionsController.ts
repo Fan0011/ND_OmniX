@@ -1,10 +1,13 @@
+import * as mongoose from "mongoose"
 import { Request, Response, NextFunction } from 'express'
 import { apiErrorHandler } from '../handlers/errorHandler'
 
+import collectionsModel from "../models/collections"
 import collections from "../repositories/collections"
+import nftSchema from '../schemas/nft_schema'
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
-import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getNFTCntFromCollection, getTokenMetadata } from '../services/moralis'
+import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getTokenMetadata } from '../services/moralis'
 
 export default class CollectionsController {
   constructor() { }
@@ -257,20 +260,47 @@ export default class CollectionsController {
    * @param next 
    */
   getNFTs = async (req: Request, res: Response, next: NextFunction) => {
-    const { chain, address, cursor } = req.body
+    const { col_url, page, display_per_page, sort, searchObj } = req.body
 
     try {
-      var nft_list = await getNFTsFromCollection(chain, address, cursor)
-			if (nft_list.result.length != 0) {
-				nft_list.result.map((obj: Object) => {
-					obj['chain'] = chain;
-					return obj;
+        const collection = await collectionsModel.findOne({ "col_url": col_url })
+        if ( collection ) {
+
+            var orQuery: any = []
+			Object.keys(searchObj).map((attrKey) => {
+				if(searchObj[attrKey].length == 0) {
+					return false
+				}
+				var orArr: { [x: string]: any; } = []
+				const findKey = 'attributes.' + attrKey
+				searchObj[attrKey].map((value) => {
+					orArr.push({[findKey]: value})
 				})
+				orQuery.push({ '$or': orArr })
+			});
+			console.log("orQuery ?", orQuery)
+
+			var andQuery = {}
+			if(Array.isArray(orQuery) && orQuery.length > 0) {
+				andQuery = { '$and': orQuery }
 			}
-			return res.json({"success": true, "message": null, "data": nft_list.result, cursor: nft_list.cursor})
+
+            const nftModel = mongoose.model(collection.col_name, nftSchema, collection.col_name)
+            const offset = page * display_per_page
+            const nfts = await nftModel.find(andQuery).sort(sort).sort('_id').skip(offset).limit(display_per_page).exec()
+
+            return res.json({"success": true, "message": null, "data": nfts, "finished": nfts.length==0
+            })
+        } else {
+            return res.status(400).json({
+                "success": false,
+                "name": "Request Error",
+                "message": 'Invalid collection.'
+            })
+        }
     } catch (error) {
-			console.log("Collection getNFTs error ? ", error)
-      apiErrorHandler(error, req, res, 'Get NFTs failed.')
+        console.log("Collection getNFTs error ? ", error)
+        apiErrorHandler(error, req, res, 'Get NFTs failed.')
     }
   }
 
@@ -281,16 +311,30 @@ export default class CollectionsController {
    * @param next 
    */
 	 getNFTInfo = async (req: Request, res: Response, next: NextFunction) => {
-		const { address, tokenId, chain } = req.params
+		const { col_url, token_id } = req.params
 
-    try {
-			const nftMetaData = await getTokenMetadata(chain, address, tokenId)
-			return res.json({"success": true, "message": null, "data": nftMetaData})
-    } catch (error) {
-			console.log("Collection getNFTInfo error ? ", error)
-      apiErrorHandler(error, req, res, 'Get NFTs failed.')
+        try {
+            const collection = await collectionsModel.findOne({ "col_url": col_url })
+            if ( collection ) {
+                const nftModel = mongoose.model(collection.col_name, nftSchema, collection.col_name)
+                const nft = await nftModel.findOne({token_id}).exec()
+
+                return res.json({"success": true, "message": null, "data": {
+                    nft,
+                    collection
+                }})
+            } else {
+                return res.status(400).json({
+                    "success": false,
+                    "name": "Request Error",
+                    "message": 'Invalid collection.'
+                })
+            }
+        } catch (error) {
+            console.log("Collection getNFTInfo error ? ", error)
+            apiErrorHandler(error, req, res, 'Get NFTs failed.')
+        }
     }
-  }
 	/**
    * Get Collection Info Function
    * @param req 
@@ -298,16 +342,38 @@ export default class CollectionsController {
    * @param next 
    */
 	getCollectionInfo = async (req: Request, res: Response, next: NextFunction) => {
-    const { chain, address } = req.params
+    const { col_url } = req.params
 
     try {
-      const cntOwner = await getNFTOwnerCntFromCollection(chain, address)
-			const cntItem = await getNFTCntFromCollection(chain, address)
-
-			return res.json({"success": true, "message": null, "data": {owner: cntOwner, item: cntItem}})
+        const collection = await collectionsModel.findOne({ "col_url": col_url })
+		res.json({"success": true, "message": null, "data": collection
+        })
     } catch (error) {
-			console.log("Collection getCollectionInfo error ? ", error)
-      apiErrorHandler(error, req, res, 'Get NFTs failed.')
+	    console.log("Collection getCollectionInfo error ? ", error)
+        apiErrorHandler(error, req, res, 'Get NFTs failed.')
     }
   }
+
+    /**
+     * Get Collection Info Function
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    getCollectionOwners = async (req: Request, res: Response, next: NextFunction) => {
+        const { col_url } = req.params
+
+        try {
+            const collection = await collectionsModel.findOne({ "col_url": col_url })
+            var cntOwner = 0
+            if ( collection ) {
+                cntOwner = await getNFTOwnerCntFromCollection(collection.chain, collection.address)
+            }
+            res.json({"success": true, "message": null, "data": cntOwner
+            })
+        } catch (error) {
+            console.log("Collection getCollectionOwners error ? ", error)
+            apiErrorHandler(error, req, res, 'Get NFTs failed.')
+        }
+    }
 }

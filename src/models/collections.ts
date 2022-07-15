@@ -3,10 +3,7 @@ import * as mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 const collectionsSchema = new Schema({
-    address: String,
     owner: String,
-    name: String,
-    description: String,
     symbol: String,
     type: String,
     websiteLink: String,
@@ -22,7 +19,26 @@ const collectionsSchema = new Schema({
         type: String,
         default: 'erc'
     },
-    chain: String
+
+    name: String,
+    network: String,
+    discord: String,
+    website: String,
+    twitter: String,
+    medium: String,
+    instagram: String,
+    telegram: String,
+    banner_image: String,
+    profile_image: String,
+    description: String,
+    col_url: String,
+    col_name: String,
+    count: Number,
+    by_name: Boolean,
+    address: String,
+    artblocks: Boolean,
+    attrs: {type: Map},
+    chain: String,
 })
 
 export default mongoose.model('collections', collectionsSchema)
