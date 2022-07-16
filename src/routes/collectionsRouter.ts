@@ -15,6 +15,7 @@ class CollectionsRouter {
     this.router.route('/chart').get(this.collectionsController.getCollectionChart)
 
     this.router.route('/nfts').post(this.collectionsController.getNFTs)   // Get NFTs of the collection
+    this.router.route('/all').get(this.collectionsController.getCollections)  //Get All collections
     this.router.route('/:col_url').get(this.collectionsController.getCollectionInfo) // Get Collection Detail
     this.router.route('/:col_url').post(this.collectionsController.getCollectionOwners) // Get Collection Detail
     this.router.route('/:col_url/:token_id').get(this.collectionsController.getNFTInfo) // Get NFT Detail

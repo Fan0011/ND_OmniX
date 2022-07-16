@@ -376,4 +376,16 @@ export default class CollectionsController {
             apiErrorHandler(error, req, res, 'Get NFTs failed.')
         }
     }
+
+    /**
+     * Get Collection Function
+     */
+    getCollections = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const collections = await collectionsModel.find()
+            res.json({"success": true, "message": null, "data": collections})
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Collections failed.')
+        }
+    }
 }
