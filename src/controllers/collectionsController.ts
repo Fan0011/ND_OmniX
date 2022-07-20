@@ -8,6 +8,7 @@ import nftSchema from '../schemas/nft_schema'
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
 import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getTokenMetadata } from '../services/moralis'
+import { ICollection } from "../interface/interface"
 
 export default class CollectionsController {
   constructor() { }
@@ -285,7 +286,7 @@ export default class CollectionsController {
 				andQuery = { '$and': orQuery }
 			}
 
-            const nftModel = mongoose.model(collection.col_name, nftSchema, collection.col_name)
+            const nftModel = mongoose.model(collection.col_name as any, nftSchema, collection.col_name as any)
             const offset = page * display_per_page
             const nfts = await nftModel.find(andQuery).sort(sort).sort('_id').skip(offset).limit(display_per_page).exec()
 
@@ -316,7 +317,7 @@ export default class CollectionsController {
         try {
             const collection = await collectionsModel.findOne({ "col_url": col_url })
             if ( collection ) {
-                const nftModel = mongoose.model(collection.col_name, nftSchema, collection.col_name)
+                const nftModel = mongoose.model(collection.col_name as any, nftSchema, collection.col_name as any)
                 const nft = await nftModel.findOne({token_id}).exec()
 
                 return res.json({"success": true, "message": null, "data": {
@@ -364,7 +365,7 @@ export default class CollectionsController {
         const { col_url } = req.params
 
         try {
-            const collection = await collectionsModel.findOne({ "col_url": col_url })
+            const collection:ICollection = await collectionsModel.findOne({ "col_url": col_url }) as any
             var cntOwner = 0
             if ( collection ) {
                 cntOwner = await getNFTOwnerCntFromCollection(collection.chain, collection.address)

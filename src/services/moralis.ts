@@ -49,6 +49,7 @@ export const getUserNFTs = async (chain: string, address: string) => {
                 cursor
             }
             const nft_result = await Moralis.Web3API.account.getNFTs(options)
+            console.log(nft_result)
             cursor = nft_result.cursor
             nfts = nfts.concat(nft_result.result)
             await timer(10);
@@ -73,7 +74,7 @@ export const getNFTsFromCollection = async (chain: string, address: string, curs
             limit
         }
         const nft_result = await Moralis.Web3API.token.getAllTokenIds(options)
-        const result = [];
+        const result = new Array();
         for ( var i = 0; i < nft_result.result.length; i ++ ) {
             const nft = nft_result.result[i];
             if ( nft.metadata == null && nft.token_uri ) {

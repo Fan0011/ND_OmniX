@@ -4,6 +4,7 @@ import { apiErrorHandler } from '../handlers/errorHandler'
 import collections from "../repositories/collections"
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
+import { ICreateOrderRequest, IOrder } from '../interface/interface'
 
 export default class OrdersController {
   constructor() { }
@@ -112,43 +113,10 @@ export default class OrdersController {
   }
 
   makeOrder = async (req: Request, res: Response, next: NextFunction) => {
-    const { 
-        isOrderAsk, 
-        signer, 
-        collection, 
-        price, 
-        tokenId, 
-        amount, 
-        strategy, 
-        currency, 
-        nonce, 
-        startTime, 
-        endTime, 
-        minPercentageToAsk, 
-        signature, 
-        srcChain, 
-        destChain 
-    } = req.body
+    const createOrderRequest: ICreateOrderRequest = req.body;
 
     try {
-        const order = await orders.createOrder({ 
-                isOrderAsk, 
-                signer, 
-                collectionAddr: collection, 
-                price, 
-                tokenId, 
-                amount, 
-                strategy, 
-                currency, 
-                nonce, 
-                startTime, 
-                endTime, 
-                minPercentageToAsk, 
-                signatureHash: signature, 
-                srcChain, 
-                destChain,
-                volume: price * amount
-            })
+        const order = await orders.createOrder(createOrderRequest)
         return res.json({
             "success": true,
             "message": null,
@@ -159,30 +127,11 @@ export default class OrdersController {
     }
   }
 
-  getNonce = async (req: Request, res: Response, next: NextFunction) => {
-    const { signer } = req.body
-
-    try {
-        const order = await orders.getUserNonce(signer)
-        
-        return res.json({
-            "success": true, 
-            "message": null, 
-            "data": order?(order.nonce + 1):1
-        })
-    } catch (error) {
-        apiErrorHandler(error, req, res, 'Get User Nonce failed.')
-    }
-  }
-
-  changeOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
+  changeOrderStatus = async (req, res) => {
     const { hash, status } = req.body
 
     try {
-        const updatedOrder = await orders.updateOrderStatus(hash, status)
-        if ( status == 'EXECUTED' ) {
-            await prices.updatePrice(updatedOrder.srcChain, updatedOrder.collectionAddr, updatedOrder.price)
-        }
+        const updatedOrder:IOrder = await orders.updateOrderStatus(hash, status) as any
 
         return res.json({
             "success": true,
