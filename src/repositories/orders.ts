@@ -1,4 +1,7 @@
+import { ICreateOrderRequest, IOrder } from "../interface/interface"
 import orders from "../models/orders"
+import { ethers } from "ethers"
+import { encodeOrderParams } from "../utils/orders"
 
 class OrdersRepository {
     constructor() {}
@@ -67,24 +70,46 @@ class OrdersRepository {
 
     getOrders = async (
         filters: Array<Object>,
-        sorting: any,
+        sorting: string,
         from: number,
         first: number,
     ) => {
-        return orders.find({ '$and': filters }).skip(from??0).limit(first??20).sort(sorting)
+        return orders.find({ '$and': filters }).skip(from).limit(first).sort(sorting).sort("_id")
     }
 
     createOrder = async (
-        data: Object
+        data: ICreateOrderRequest
     ) => {
-        const order = new orders(data)
+        const vrs = ethers.utils.splitSignature(data.signature);
+
+        const askWithoutHash: IOrder = {
+            isOrderAsk: data.isOrderAsk,
+            signer: data.signer,
+            collectionAddress: data.collection,
+            price: data.price,
+            tokenId: data.tokenId,
+            chain: data.chain,
+            amount: data.amount,
+            strategy: data.strategy,
+            currencyAddress: data.currency,
+            nonce: data.nonce,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            minPercentageToAsk: data.minPercentageToAsk,
+            signature: data.signature,
+            params: data.params,
+            status: 'VALID',
+            ...vrs,
+        };
+
+        const order = new orders(askWithoutHash)
         return order.save()
     }
 
     getUserNonce = async (
-        signer: string
+        address: string
     ) => {
-        return orders.findOne({ signer })
+        return orders.findOne({ signer: address })
         .sort('nonce')
     }
 
@@ -93,7 +118,7 @@ class OrdersRepository {
         status: string
     ) => {
         return orders.findOneAndUpdate({_id}, {
-            $set: { 'status': status, 'signatureHash': null },
+            $set: { 'status': status, 'signature': null },
         }, {
             new: true
         })

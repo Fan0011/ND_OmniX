@@ -24,15 +24,15 @@ class UsersRepository {
   }
 
   updateProfile = async (
-    address: String,
-    username: String,
-    bio: String,
-    twitter: String,
-    website: String,
-    avatar: String,
-    banner_1: String,
-    banner_2: String,
-    banner_3: String,
+    address: string,
+    username: string,
+    bio: string,
+    twitter: string,
+    website: string,
+    avatar: string,
+    banner_1: string,
+    banner_2: string,
+    banner_3: string,
   ) => {
     const filters = [{ address }]
     const user = await users.findOne({ $and: filters })
@@ -43,9 +43,11 @@ class UsersRepository {
       user.twitter = twitter
       user.website = website
       if ( avatar ) user.avatar = avatar
-      if ( banner_1 ) user.banners[0] = banner_1
-      if ( banner_2 ) user.banners[1] = banner_2
-      if ( banner_3 ) user.banners[2] = banner_3
+      const banners = new Array();
+      if ( banner_1 ) banners[0] = banner_1
+      if ( banner_2 ) banners[1] = banner_2
+      if ( banner_3 ) banners[2] = banner_3
+      user.banners = banners;
       user.save()
       return user
     } else {
@@ -61,7 +63,7 @@ class UsersRepository {
     }
   }
 
-  addBanner = async (address: String, banner: String) => {
+  addBanner = async (address: string, banner: string) => {
     const filters = [{ address }]
 
     users.find({ $and: filters }).exec((err, user) => {
@@ -69,7 +71,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const banners = user[0].banners
+          const banners = user[0].banners as any
           if (banner) banners.push(banner)
           user[0].banners = banners
           user[0].save()
@@ -79,7 +81,7 @@ class UsersRepository {
     })
   }
 
-  removeBanner = async (address: String, banner: String) => {
+  removeBanner = async (address: string, banner: string) => {
     const filters = [{ address }]
 
     users.find({ $and: filters }).exec((err, user) => {
@@ -87,11 +89,11 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const banners = user[0].banners
+          const banners = user[0].banners as any
           if (banner) {
             var filename = banner.substring(banner.lastIndexOf('/') + 1)
             filename = filename.substring(filename.lastIndexOf('\\') + 1)
-            const idx = banners.indexOf('uploads\\' + filename)
+            const idx = banners.indexOf("uploads\\" + filename)
             banners.splice(idx, 1)
           }
           user[0].banners = banners
@@ -102,7 +104,7 @@ class UsersRepository {
     })
   }
 
-  addWatchlist = async (address: String, watchlist: String) => {
+  addWatchlist = async (address: string, watchlist: string) => {
     const filters = [{ address }]
 
     users.find({ $and: filters }).exec((err, user) => {
@@ -110,7 +112,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const watchlists = user[0].watchlists
+          const watchlists = user[0].watchlists as any
           watchlists.push(watchlist)
           user[0].watchlists = watchlists
           user[0].save()
@@ -128,7 +130,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const watchlists = user[0].watchlists
+          const watchlists = user[0].watchlists as any
           const idx = watchlists.indexOf(watchlist)
           watchlists.splice(idx, 1)
           user[0].watchlists = watchlists
@@ -147,7 +149,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const hiddenNFTs = user[0].hiddenNFTs
+          const hiddenNFTs = user[0].hiddenNFTs as any
           hiddenNFTs.push(hiddenNFT)
           user[0].hiddenNFTs = hiddenNFTs
           user[0].save()
@@ -165,7 +167,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const hiddenNFTs = user[0].hiddenNFTs
+          const hiddenNFTs = user[0].hiddenNFTs as any
           const idx = hiddenNFTs.indexOf(hiddenNFT)
           hiddenNFTs.splice(idx, 1)
           user[0].hiddenNFTs = hiddenNFTs
@@ -184,7 +186,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const followings = user[0].followings
+          const followings = user[0].followings as any
           followings.push(following)
           user[0].followings = followings
           user[0].save()
@@ -202,7 +204,7 @@ class UsersRepository {
         return []
       } else {
         if (user && user[0]) {
-          const followings = user[0].followings
+          const followings = user[0].followings as any
           const idx = followings.indexOf(following)
           followings.splice(idx, 1)
           user[0].followings = followings

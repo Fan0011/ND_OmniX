@@ -1,9 +1,14 @@
+import * as mongoose from "mongoose"
 import { Request, Response, NextFunction } from 'express'
 import { apiErrorHandler } from '../handlers/errorHandler'
 
 import collections from "../repositories/collections"
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
+import events from "../repositories/events"
+import nftSchema from '../schemas/nft_schema'
+
+import { ICreateOrderRequest, IGetOrderRequest, IOrder } from '../interface/interface'
 
 export default class OrdersController {
   constructor() { }
@@ -34,64 +39,76 @@ export default class OrdersController {
    */
 
   getOrders = async (req: Request, res: Response, next: NextFunction) => {
-    const { isOrderAsk, collection, tokenId, signer, strategy, currency, min, max, startTime, endTime, status, first, from, sort, chain } = req.body
+    const getOrderRequest: IGetOrderRequest = req.body;
     
-    const filters = new Array
-    if ( isOrderAsk ) {
-        filters.push({isOrderAsk: isOrderAsk})
+    let filters = new Array
+    let first = 20
+    let from = 0
+    if ( getOrderRequest.isOrderAsk ) {
+        filters.push({isOrderAsk: getOrderRequest.isOrderAsk})
     }
-    if ( collection ) {
-        filters.push({collectionAddr: collection})
+    if ( getOrderRequest.collection ) {
+        filters.push({collectionAddress: getOrderRequest.collection})
     }
-    if ( tokenId ) {
-        filters.push({tokenId: tokenId})
+    if ( getOrderRequest.tokenId ) {
+        filters.push({tokenId: getOrderRequest.tokenId})
     }
-    if ( signer ) {
-        filters.push({signer: signer})
+    if ( getOrderRequest.strategy ) {
+        filters.push({strategy: getOrderRequest.strategy})
     }
-    if ( strategy ) {
-        filters.push({strategy: strategy})
+    if ( getOrderRequest.currency ) {
+        filters.push({currency: getOrderRequest.currency})
     }
-    if ( currency ) {
-        filters.push({currency: currency})
+    if ( getOrderRequest.price && getOrderRequest.price.min > 0 ) {
+        filters.push({price: {$gte:getOrderRequest.price.min}})
     }
-    if ( min > 0 ) {
-        filters.push({price: {$gte:min}})
+    if ( getOrderRequest.price && getOrderRequest.price.max > 0 ) {
+        filters.push({price: {$lte:getOrderRequest.price.max}})
     }
-    if ( max > 0 ) {
-        filters.push({price: {$lte:max}})
+    if ( getOrderRequest.startTime ) {
+        filters.push({startTime: {$lte:getOrderRequest.startTime}})
     }
-    if ( startTime > 0 ) {
-        filters.push({startTime: {$lte:startTime}})
+    if ( getOrderRequest.endTime ) {
+        filters.push({endTime: {$gte:getOrderRequest.endTime}})
     }
-    if ( endTime > 0 ) {
-        filters.push({endTime: {$gte:endTime}})
+    if ( getOrderRequest.status?.length > 0 ) {
+        filters.push({status: {$in:getOrderRequest.status}})
     }
-    if ( status?.length > 0 ) {
-        filters.push({status: {$in:status}})
+    if ( getOrderRequest.chain ) {
+        filters.push({chain: getOrderRequest.chain})
     }
-    if ( chain ) {
-        filters.push({srcChain: chain})
+    if ( getOrderRequest.nonce ) {
+        filters = [{nonce: getOrderRequest.nonce}];
+    }
+    if ( getOrderRequest.signer ) {
+        filters.push({signer: getOrderRequest.signer})
+    }
+    if ( getOrderRequest.pagination && getOrderRequest.pagination.first ) {
+        first = getOrderRequest.pagination.first;
+    }
+    if ( getOrderRequest.pagination && getOrderRequest.pagination.from ) {
+        from = getOrderRequest.pagination.from;
+    }
+    if ( getOrderRequest.signer ) {
+        filters.push({signer: getOrderRequest.signer})
     }
 
-    let sorting = new Object
-    if ( sort == 'EXPIRING_SOON' )
+    let sorting = "_id"
+    if ( getOrderRequest.sort == 'EXPIRING_SOON' )
     {
-        sorting = {endTime: 1}
+        sorting = "endTime"
     }
-    else if ( sort == 'NEWEST' ) {
-        sorting = {startTime: 1}
+    else if ( getOrderRequest.sort == 'NEWEST' ) {
+        sorting = "-createdAt"
     }
-    else if ( sort == 'PRICE_ASC' ) {
-        sorting = {price: 1}
+    else if ( getOrderRequest.sort == 'PRICE_ASC' ) {
+        sorting = "price"
     }
-    else if ( sort == 'PRICE_DESC' ) {
-        sorting = {price: -1}
-    } else {
-        sorting = {_id: 1}
+    else if ( getOrderRequest.sort == 'PRICE_DESC' ) {
+        sorting = "-price"
     }
 
-    if ( status?.length == undefined ) {
+    if ( getOrderRequest.status?.length == undefined ) {
         return res.status(400).json({
             "success": false,
             "name": "Request Error",
@@ -112,43 +129,16 @@ export default class OrdersController {
   }
 
   makeOrder = async (req: Request, res: Response, next: NextFunction) => {
-    const { 
-        isOrderAsk, 
-        signer, 
-        collection, 
-        price, 
-        tokenId, 
-        amount, 
-        strategy, 
-        currency, 
-        nonce, 
-        startTime, 
-        endTime, 
-        minPercentageToAsk, 
-        signature, 
-        srcChain, 
-        destChain 
-    } = req.body
+    const createOrderRequest: ICreateOrderRequest = req.body;
 
     try {
-        const order = await orders.createOrder({ 
-                isOrderAsk, 
-                signer, 
-                collectionAddr: collection, 
-                price, 
-                tokenId, 
-                amount, 
-                strategy, 
-                currency, 
-                nonce, 
-                startTime, 
-                endTime, 
-                minPercentageToAsk, 
-                signatureHash: signature, 
-                srcChain, 
-                destChain,
-                volume: price * amount
-            })
+        const order = await orders.createOrder(createOrderRequest)
+        const collection = await collections.getCollectionByAddress(createOrderRequest.chain, createOrderRequest.collection)
+        
+        const nftModel = mongoose.model(collection.col_name as any, nftSchema, collection.col_name as any)
+        const nft = await nftModel.findOne({token_id: createOrderRequest.tokenId});
+
+        const event = await events.createEvent(createOrderRequest.signer, '', "LIST", collection._id, nft._id, order._id)
         return res.json({
             "success": true,
             "message": null,
@@ -159,30 +149,11 @@ export default class OrdersController {
     }
   }
 
-  getNonce = async (req: Request, res: Response, next: NextFunction) => {
-    const { signer } = req.body
-
-    try {
-        const order = await orders.getUserNonce(signer)
-        
-        return res.json({
-            "success": true, 
-            "message": null, 
-            "data": order?(order.nonce + 1):1
-        })
-    } catch (error) {
-        apiErrorHandler(error, req, res, 'Get User Nonce failed.')
-    }
-  }
-
-  changeOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
+  changeOrderStatus = async (req, res) => {
     const { hash, status } = req.body
 
     try {
-        const updatedOrder = await orders.updateOrderStatus(hash, status)
-        if ( status == 'EXECUTED' ) {
-            await prices.updatePrice(updatedOrder.srcChain, updatedOrder.collectionAddr, updatedOrder.price)
-        }
+        const updatedOrder:IOrder = await orders.updateOrderStatus(hash, status) as any
 
         return res.json({
             "success": true,

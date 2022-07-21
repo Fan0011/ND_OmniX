@@ -1,7 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import { apiErrorHandler } from '../handlers/errorHandler'
+import { IOrder } from '../interface/interface'
+import orders from '../repositories/orders'
 import users from '../repositories/users'
 import { getUserNFTs } from '../services/moralis'
+
+import * as aws from 'aws-sdk'
+import * as fs from 'fs'
+import * as mime from 'mime-types'
 
 export default class UsersController {
   constructor() { }
@@ -46,20 +52,39 @@ export default class UsersController {
   updateProfile = async (req, res) => {
     try {
       const { address, username, bio, twitter, website } = req.body
+
       const files = req.files;
       var avatar = '', banner_1 = '', banner_2 = '', banner_3 = '';
 
       for (const key of Object.keys(files)) {
         const file = files[key];
+        
+        const s3 = new aws.S3({
+          accessKeyId: process.env.AWS_ACCESS_KEY,
+          secretAccessKey: process.env.AWS_SECRET_KEY,
+          region: process.env.REGION,
+          correctClockSkew: true,  
+          httpOptions: {timeout: 1800000}
+        })
+        const blob = await fs.readFileSync(file.path);
+
+        const uploadedFile = await s3.upload({
+          Bucket: process.env.BUCKET_NAME as any,
+          Key: 'uploads/' + file.filename,
+          ContentType: file.mimetype,
+          Body: blob,
+        }).promise() as any;
+
         if ( file['fieldname'] === 'avatar' ) {
-          avatar = file['path']
+          avatar = uploadedFile.key
         } else if ( file['fieldname'] === 'banner_1' ) {
-          banner_1 = file['path']
+          banner_1 = uploadedFile.key
         } else if ( file['fieldname'] === 'banner_2' ) {
-          banner_2 = file['path']
+          banner_2 = uploadedFile.key
         } else if ( file['fieldname'] === 'banner_3' ) {
-          banner_3 = file['path']
+          banner_3 = uploadedFile.key
         }
+
       }
 
       const user = await users.updateProfile( address, username, bio, twitter, website, avatar, banner_1, banner_2, banner_3 )
@@ -70,6 +95,7 @@ export default class UsersController {
         "data": user,
       })
     } catch (error) {
+      console.log(error)
       apiErrorHandler(error, req, res, 'Update Profile failed.')
     }
   }
@@ -203,6 +229,26 @@ export default class UsersController {
       })
     } catch (error) {
       apiErrorHandler(error, req, res, 'Remove Following failed.')
+    }
+  }
+
+  getUserNonce = async (req, res) => {
+    try {
+      const { address } = req.params
+
+      const order:IOrder = await orders.getUserNonce(address)
+
+      let nonce = 1;
+      if ( order )
+        nonce = parseInt(order.nonce) + 1;
+        
+      return res.json({
+          "success": true, 
+          "message": null, 
+          "data": nonce
+      })
+    } catch (error) {
+      apiErrorHandler(error, req, res, 'getUserNonce failed.')
     }
   }
 }

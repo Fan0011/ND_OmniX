@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import UsersController from '../controllers/usersController'
+import upload from '../utils/multer'
 
 class UsersRouter {
   router = Router()
@@ -20,6 +21,7 @@ class UsersRouter {
     this.router.route('/remove_hidden_nft').post(this.usersController.removeHiddenNFT)
     this.router.route('/add_following').post(this.usersController.addFollowing)
     this.router.route('/remove_following').post(this.usersController.removeFollowing)
+    this.router.route('/getUserNonce/:address').get(this.usersController.getUserNonce)
   }
 }
 export default new UsersRouter().router

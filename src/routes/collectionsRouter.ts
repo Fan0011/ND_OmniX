@@ -13,9 +13,12 @@ class CollectionsRouter {
     this.router.route('/').post(this.collectionsController.addCollection)
     this.router.route('/stats').get(this.collectionsController.getCollectionStat)
     this.router.route('/chart').get(this.collectionsController.getCollectionChart)
-    this.router.route('/nfts').post(this.collectionsController.getNFTs)
-    this.router.route('/:chain/:address').get(this.collectionsController.getCollectionInfo)
-    this.router.route('/:chain/:address/:tokenId').get(this.collectionsController.getNFTInfo)
+
+    this.router.route('/nfts').post(this.collectionsController.getNFTs)   // Get NFTs of the collection
+    this.router.route('/all').get(this.collectionsController.getCollections)  //Get All collections
+    this.router.route('/:col_url').get(this.collectionsController.getCollectionInfo) // Get Collection Detail
+    this.router.route('/:col_url').post(this.collectionsController.getCollectionOwners) // Get Collection Detail
+    this.router.route('/:col_url/:token_id').get(this.collectionsController.getNFTInfo) // Get NFT Detail
   }
 }
 export default new CollectionsRouter().router
