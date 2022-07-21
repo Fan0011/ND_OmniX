@@ -1,6 +1,7 @@
 import { ICreateOrderRequest, IOrder } from "../interface/interface"
 import orders from "../models/orders"
 import { ethers } from "ethers"
+import { encodeOrderParams } from "../utils/orders"
 
 class OrdersRepository {
     constructor() {}
@@ -69,11 +70,11 @@ class OrdersRepository {
 
     getOrders = async (
         filters: Array<Object>,
-        sorting: any,
+        sorting: string,
         from: number,
         first: number,
     ) => {
-        return orders.find({ '$and': filters }).skip(from??0).limit(first??20).sort(sorting)
+        return orders.find({ '$and': filters }).skip(from).limit(first).sort(sorting).sort("_id")
     }
 
     createOrder = async (

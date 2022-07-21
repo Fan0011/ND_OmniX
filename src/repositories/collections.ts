@@ -8,7 +8,6 @@ class CollectionsRepository {
         address: String
     ) => {
         return collections.findOne({ chain, address })
-        .sort('nonce')
     }
 
     addCollection = async(

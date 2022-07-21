@@ -234,7 +234,7 @@ export default class UsersController {
 
   getUserNonce = async (req, res) => {
     try {
-      const { address } = req.body
+      const { address } = req.params
 
       const order:IOrder = await orders.getUserNonce(address)
 

@@ -2,29 +2,29 @@ import * as mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 const ordersSchema = new Schema({
+    chain: String,
+    collectionAddress: String,
+    tokenId: String,
     isOrderAsk: Boolean,
     signer: String,
-    collectionAddress: String,
-    price: String,
-    tokenId: String,
-    chain: String,
-    amount: Number,
     strategy: String,
     currencyAddress: String,
+    amount: Number,
+    price: String,
     nonce: String,
     startTime: Number,
     endTime: Number,
     minPercentageToAsk: Number,
+    params: String,
     signature: String,
-    params: [String],
-    status: {
-        type: String,
-        enum: ['CANCELLED', 'EXECUTED', 'EXPIRED', 'VALID'],
-        default: 'VALID'
-    },
     v: Number,
     r: String,
     s: String,
+    status: {
+        type: String,
+        enum: ['CANCELLED', 'ERC_APPROVAL', 'ERC20_APPROVAL', 'ERC20_BALANCE', 'EXECUTED', 'EXPIRED', 'INVALID_OWNER', 'VALID'],
+        default: 'VALID'
+    },
 },
 { timestamps: true })
 

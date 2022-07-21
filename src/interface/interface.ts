@@ -14,7 +14,7 @@ export interface IOrder {
     endTime: number,
     minPercentageToAsk: number,
     signature: string,
-    params: [string],
+    params: string,
     status: string,
     v: number,
     r: string,
@@ -75,8 +75,22 @@ export interface ICreateOrderRequest {
     startTime: number,
     endTime: number,
     minPercentageToAsk: number,
-    params: [string],
-    v: number,
-    r: string,
-    s: string,
+    params: string,
+}
+
+export interface IGetOrderRequest {
+    isOrderAsk: boolean,
+    chain: string,
+    collection: string,
+    tokenId: string,
+    signer: string,
+    nonce: string,
+    strategy: string,
+    currency: string,
+    price: any,
+    startTime: string,
+    endTime: string,
+    status: [string],
+    pagination: any,
+    sort: string
 }
