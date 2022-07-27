@@ -19,6 +19,7 @@ class CollectionsRouter {
     this.router.route('/:col_url').get(this.collectionsController.getCollectionInfo) // Get Collection Detail
     this.router.route('/:col_url').post(this.collectionsController.getCollectionOwners) // Get Collection Detail
     this.router.route('/:col_url/:token_id').get(this.collectionsController.getNFTInfo) // Get NFT Detail
+    this.router.route('/owner/:col_url/:token_id').get(this.collectionsController.getNFTOwner)
   }
 }
 export default new CollectionsRouter().router

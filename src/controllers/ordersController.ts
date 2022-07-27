@@ -9,6 +9,8 @@ import events from "../repositories/events"
 import nftSchema from '../schemas/nft_schema'
 
 import { ICreateOrderRequest, IGetOrderRequest, IOrder } from '../interface/interface'
+import { ethers } from "ethers"
+import { encodeOrderParams } from "../utils/orders"
 
 export default class OrdersController {
   constructor() { }
@@ -39,11 +41,12 @@ export default class OrdersController {
    */
 
   getOrders = async (req: Request, res: Response, next: NextFunction) => {
-    const getOrderRequest: IGetOrderRequest = req.body;
+    const getOrderRequest: IGetOrderRequest = req.query as any;
     
     let filters = new Array
     let first = 20
     let from = 0
+    
     if ( getOrderRequest.isOrderAsk ) {
         filters.push({isOrderAsk: getOrderRequest.isOrderAsk})
     }
@@ -89,9 +92,6 @@ export default class OrdersController {
     if ( getOrderRequest.pagination && getOrderRequest.pagination.from ) {
         from = getOrderRequest.pagination.from;
     }
-    if ( getOrderRequest.signer ) {
-        filters.push({signer: getOrderRequest.signer})
-    }
 
     let sorting = "_id"
     if ( getOrderRequest.sort == 'EXPIRING_SOON' )
@@ -117,6 +117,7 @@ export default class OrdersController {
     }
 
     try {
+        console.log(filters)
         const filteredOrders = await orders.getOrders(filters, sorting, from, first)
         return res.json({
             "success": true,
@@ -145,7 +146,8 @@ export default class OrdersController {
             "data": order,
         })
     } catch (error) {
-        apiErrorHandler(error, req, res, 'Get Orders failed.')
+        console.log(error)
+        apiErrorHandler(error, req, res, 'Post Orders failed.')
     }
   }
 

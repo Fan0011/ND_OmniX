@@ -12,7 +12,7 @@ const nftSchema = new Schema({
     rank: Number,
     token_id: Number,
     name1: String,
-    price: Number,
+    price: String,
 })
 
 export default nftSchema;
