@@ -42,11 +42,27 @@ class UsersRepository {
       user.bio = bio
       user.twitter = twitter
       user.website = website
-      if ( avatar ) user.avatar = avatar
-      const banners = new Array();
-      if ( banner_1 ) banners[0] = banner_1
-      if ( banner_2 ) banners[1] = banner_2
-      if ( banner_3 ) banners[2] = banner_3
+      if ( !user.avatar ) {
+        user.avatar = 'uploads/default_avatar.png'
+      }
+      if ( avatar ) 
+        user.avatar = avatar
+      let banners = user.banners;
+      if ( !user.banners ) {
+        banners = []
+        banners.push('uploads/default_banner.png')
+        banners.push('uploads/default_banner.png')
+        banners.push('uploads/default_banner.png')
+      }
+      if ( banner_1 ) 
+        banners[0] = banner_1
+      
+      if ( banner_2 ) 
+        banners[1] = banner_2
+
+      if ( banner_3 ) 
+        banners[2] = banner_3
+
       user.banners = banners;
       user.save()
       return user

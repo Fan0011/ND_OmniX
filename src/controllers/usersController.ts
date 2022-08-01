@@ -54,9 +54,7 @@ export default class UsersController {
       const { address, username, bio, twitter, website } = req.body
 
       const files = req.files;
-      var avatar = 'uploads/default_avatar.png', banner_1 = 'uploads/default_banner.png', banner_2 = 'uploads/default_banner.png', banner_3 = 'uploads/default_banner.png';
-
-      console.log(files);
+      var avatar = '', banner_1 = '', banner_2 = '', banner_3 = '';
 
       for (const key of Object.keys(files)) {
         const file = files[key];
