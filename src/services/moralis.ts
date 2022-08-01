@@ -145,7 +145,27 @@ export const getTokenMetadata = async (chain: string, address: string, token_id:
 
 		return tokenIdMetadata;
 	} catch (err) {
-		console.log("moralis getNFTCntFromCollection err ?", err)
+		console.log("moralis getTokenMetadata err ?", err)
+		return {}
+	}     
+}
+export const getTokenOwners = async (chain: string, address: string, token_id: string) => {
+	try {
+        await timer(10);
+		await Moralis.start({ serverUrl, appId, moralisSecret })
+		const tokenIdOwners = await Moralis.Web3API.token.getTokenIdOwners({
+			chain,
+			address,
+			token_id
+        })
+        let nftOwnerAddress = ""
+        for ( let nftOwner of tokenIdOwners.result ) {
+            nftOwnerAddress = nftOwner.owner_of
+        }
+
+		return nftOwnerAddress;
+	} catch (err) {
+		console.log("moralis getTokenOwners err ?", err)
 		return {}
 	}     
 }

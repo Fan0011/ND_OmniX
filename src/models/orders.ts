@@ -2,6 +2,7 @@ import * as mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 const ordersSchema = new Schema({
+    hash: String,
     chain: String,
     collectionAddress: String,
     tokenId: String,
@@ -15,7 +16,7 @@ const ordersSchema = new Schema({
     startTime: Number,
     endTime: Number,
     minPercentageToAsk: Number,
-    params: String,
+    params: [],
     signature: String,
     v: Number,
     r: String,

@@ -68,6 +68,18 @@ class OrdersRepository {
         )
     }
 
+    getAsk = async (
+        chain: string,
+        collection: string,
+        tokenId: string,
+    ) => {
+        const filters = new Array()
+        filters.push({ chain: chain })
+        filters.push({ collectionAddress: collection })
+        filters.push({ tokenId: tokenId })
+        return orders.findOne({ '$and': filters }).sort('price');
+    }
+
     getOrders = async (
         filters: Array<Object>,
         sorting: string,
@@ -77,12 +89,56 @@ class OrdersRepository {
         return orders.find({ '$and': filters }).skip(from).limit(first).sort(sorting).sort("_id")
     }
 
+    
+
+    computeOrderHash = (order: ICreateOrderRequest) => {
+        const types = [
+            "bytes32",
+            "bool",
+            "address",
+            "address",
+            "uint256",
+            "uint256",
+            "uint256",
+            "address",
+            "address",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint256",
+            "bytes32",
+        ];
+        const MAKER_ORDER_HASH = "0x40261ade532fa1d2c7293df30aaadb9b3c616fae525a0b56d3d411c841a85028";
+
+        const params = order.params?order.params:[]
+        const values = [
+            MAKER_ORDER_HASH, // maker order hash (from Solidity)
+            order.isOrderAsk,
+            order.signer,
+            order.collection,
+            order.price,
+            order.tokenId,
+            order.amount,
+            order.strategy,
+            order.currency,
+            order.nonce,
+            order.startTime,
+            order.endTime,
+            order.minPercentageToAsk,
+            ethers.utils.keccak256(params),
+        ];
+
+        return ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(types, values));
+    }
+
     createOrder = async (
         data: ICreateOrderRequest
     ) => {
         const vrs = ethers.utils.splitSignature(data.signature);
+        const hash = this.computeOrderHash(data)
 
         const askWithoutHash: IOrder = {
+            hash,
             isOrderAsk: data.isOrderAsk,
             signer: data.signer,
             collectionAddress: data.collection,
@@ -118,7 +174,7 @@ class OrdersRepository {
         status: string
     ) => {
         return orders.findOneAndUpdate({_id}, {
-            $set: { 'status': status, 'signature': null },
+            $set: { 'status': status, 'signature': null, 'v': null, 'r': null, 's': null },
         }, {
             new: true
         })

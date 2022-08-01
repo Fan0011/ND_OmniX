@@ -8,7 +8,7 @@ import * as cors from 'cors'
 import rateLimiter from './middlewares/rateLimit'
 import { unCoughtErrorHandler } from './handlers/errorHandler'
 import Routes from './routes'
-import { installBSCTestEvents, installRopstenEvents } from './services/events'
+import { installBSCTestEvents, installRinkebyEvents, installRopstenEvents } from './services/events'
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 
@@ -40,6 +40,7 @@ export default class Server {
 
     // installBSCTestEvents()
     // installRopstenEvents()
+    installRinkebyEvents()
   }
 }
 

@@ -7,7 +7,7 @@ import collections from "../repositories/collections"
 import nftSchema from '../schemas/nft_schema'
 import orders from "../repositories/orders"
 import prices from "../repositories/prices"
-import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getTokenMetadata } from '../services/moralis'
+import { getNFTsFromCollection, getNFTOwnerCntFromCollection, getTokenOwners } from '../services/moralis'
 import { ICollection } from "../interface/interface"
 
 export default class CollectionsController {
@@ -302,6 +302,29 @@ export default class CollectionsController {
     } catch (error) {
         console.log("Collection getNFTs error ? ", error)
         apiErrorHandler(error, req, res, 'Get NFTs failed.')
+    }
+  }
+
+  getNFTOwner = async ( req, res ) => {
+    const { col_url, token_id } = req.params
+    
+    try {
+        const collection = await collectionsModel.findOne({ "col_url": col_url })
+        if ( collection ) {
+            const tokenIdOwner = await getTokenOwners(collection.chain, collection.address, token_id as any)
+
+            return res.json({"success": true, "message": null, "owner": tokenIdOwner
+            })
+        } else {
+            return res.status(400).json({
+                "success": false,
+                "name": "Request Error",
+                "message": 'Invalid collection.'
+            })
+        }
+    } catch (error) {
+        console.log("Collection getNFTOwner error ? ", error)
+        apiErrorHandler(error, req, res, 'Get NFT Owner failed.')
     }
   }
 
