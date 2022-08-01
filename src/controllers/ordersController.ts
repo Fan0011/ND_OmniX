@@ -166,4 +166,9 @@ export default class OrdersController {
         apiErrorHandler(error, req, res, 'Get User Nonce failed.')
     }
   }
+
+  takerBid = async (args) => {
+    const { orderHash } = args;
+    await orders.updateOrderStatus(orderHash, 'EXECUTED');
+  }
 }

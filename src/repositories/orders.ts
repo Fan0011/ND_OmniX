@@ -174,7 +174,7 @@ class OrdersRepository {
         status: string
     ) => {
         return orders.findOneAndUpdate({_id}, {
-            $set: { 'status': status, 'signature': null },
+            $set: { 'status': status, 'signature': null, 'v': null, 'r': null, 's': null },
         }, {
             new: true
         })
