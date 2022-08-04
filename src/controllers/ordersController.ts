@@ -130,9 +130,9 @@ export default class OrdersController {
   }
 
   makeOrder = async (req: Request, res: Response, next: NextFunction) => {
-    const createOrderRequest: ICreateOrderRequest = req.body;
-
     try {
+        const createOrderRequest: ICreateOrderRequest = req.body;
+
         const order = await orders.createOrder(createOrderRequest)
         const collection = await collections.getCollectionByAddress(createOrderRequest.chain, createOrderRequest.collection)
         
@@ -145,9 +145,8 @@ export default class OrdersController {
             "message": null,
             "data": order,
         })
-    } catch (error) {
-        console.log(error)
-        apiErrorHandler(error, req, res, 'Post Orders failed.')
+    } catch (err: any) {
+        apiErrorHandler(err, req, res, `Post Orders failed. (${err.reason})`)
     }
   }
 
