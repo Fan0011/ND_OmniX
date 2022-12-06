@@ -37,10 +37,6 @@ export default class Server {
     app.use(rateLimiter()) //  apply to all requests
     app.use(unCoughtErrorHandler)
     app.use(multer({dest:'./uploads/'}).any());
-
-    // installBSCTestEvents()
-    // installRopstenEvents()
-    installRinkebyEvents()
   }
 }
 

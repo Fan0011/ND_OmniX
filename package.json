@@ -1,7 +1,7 @@
 {
-  "name": "omni-x-api",
+  "name": "BlackCat",
   "version": "1.0.0",
-  "description": "Omni-X Api",
+  "description": "BlackCat Api",
   "scripts": {
     "start": "npm run transpile && node server.js",
     "dev": "concurrently \"npm:watch\" \"npm:serve\"",
@@ -14,16 +14,9 @@
   "keywords": [
     "Express",
     "MongoDB",
-    "Omni",
-    "Omni-X",
-    "Babel",
-    "Webpack Configuration"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Top-Kraken/omni-x-api"
-  },
-  "author": "Top-Kraken",
+    "BlackCat"
+  ],  
+  "author": "Charlie Brown",
   "license": "MIT",
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
